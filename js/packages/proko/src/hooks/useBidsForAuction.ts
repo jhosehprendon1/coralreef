@@ -1,0 +1,42 @@
+import React, { useMemo } from 'react';
+import { PublicKey } from '@solana/web3.js';
+import {
+  AuctionData,
+  BidderMetadata,
+  BidderMetadataParser,
+  cache,
+  ParsedAccount,
+} from '@oyster/common';
+
+export const useBidsForAuction = (auctionPubkey: PublicKey | string) => {
+  const id = useMemo(
+    () =>
+      typeof auctionPubkey === 'string'
+        ? auctionPubkey
+        : auctionPubkey.toBase58(),
+    [auctionPubkey],
+  );
+
+  const bids = cache
+    .byParser(BidderMetadataParser)
+    .filter(key => {
+      const bidder = cache.get(key) as ParsedAccount<BidderMetadata>;
+      if (!bidder) {
+        return false;
+      }
+
+      return bidder.info.auctionPubkey.toBase58() === id;
+    })
+    .map(key => {
+      const bidder = cache.get(key) as ParsedAccount<BidderMetadata>;
+      return bidder;
+    })
+    .sort((a, b) => b.info.lastBid.sub(a.info.lastBid).toNumber())
+    .map(item => {
+      return {
+        ...item,
+      };
+    });
+
+  return bids;
+};

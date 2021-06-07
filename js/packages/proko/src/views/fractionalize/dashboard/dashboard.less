@@ -1,0 +1,54 @@
+.fr_dashboard {
+  &__header {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    padding-top: 50px;
+    padding-bottom: 60px;
+
+    &_image {
+      grid-column: 3 / span 1;
+    }
+    &_title {
+      grid-column: 4 / span 7;
+      display: flex;
+      align-items: center;
+      font-size: 30px;
+
+      h1 {
+        width: 100%;
+        color: #23ACDB;
+        font-weight: 700;
+        text-align: center;
+      }
+    }
+  }
+
+  &__content {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+  }
+
+  &__picture {
+    grid-column: 4 / span 8;
+  }
+
+  &__text {
+    font-size: 16px;
+    color: #23ACDB;
+    padding: 10px 0;
+    grid-column: 3 / span 8;
+
+    &--first {
+      padding-top: 40px;
+    }
+
+    &--last {
+      padding-bottom: 40px;
+    }
+  }
+
+  .highlight {
+    font-weight: 700;
+  }
+  // grid-column: 3 / span 4;
+}
