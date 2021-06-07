@@ -129,7 +129,7 @@ export interface FractionalizeState {
 
 export const Actions = () => {
   const connection = useConnection();
-  const { wallet } = useWallet();
+  const { connected, wallet } = useWallet();
   const { whitelistedCreatorsByCreator } = useMeta();
   const { step_param }: { step_param: string } = useParams();
   const history = useHistory();
@@ -200,6 +200,7 @@ export const Actions = () => {
       attributes={attributes}
       setAttributes={setAttributes}
       confirm={() => gotoNextStep()}
+      connected={connected}
     />
   );
 
@@ -281,6 +282,7 @@ const CopiesStep = (props: {
   attributes: FractionalizeState;
   setAttributes: (attr: FractionalizeState) => void;
   confirm: () => void;
+  connected?: boolean
 }) => {
   const initialArt: any | null = props.attributes.items[0] || null;
   const [currentArtselected, selectCardArt] = useState(initialArt);
@@ -325,6 +327,8 @@ const CopiesStep = (props: {
               );
             })
           }
+          {!props.connected && <p className="art_list__no_arts">Please connect to a wallet</p>}
+          {props.connected && !arts.length && <p className="art_list__no_arts">Please, first create an NFT</p>}
           {props.attributes.category === AuctionCategory.Limited && (
             <label className="action-field">
               <span className="field-title">

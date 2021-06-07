@@ -79,7 +79,7 @@ export default (props: {
             <Statistic
               className="launch__royalty_percentage"
               title="Royalty Percentage"
-              value={props.attributes.seller_fee_basis_points / 100}
+              value={props.attributes.seller_fee_basis_points}
               precision={2}
               suffix="%"
             />

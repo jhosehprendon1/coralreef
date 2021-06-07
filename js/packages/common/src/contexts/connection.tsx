@@ -54,7 +54,7 @@ export const ENDPOINTS = [
   },
   {
     name: 'devnet' as ENV,
-    endpoint: clusterApiUrl('devnet'),
+    endpoint: 'http://api.devnet.solana.com',
     ChainId: ChainId.Devnet,
   },
 ];

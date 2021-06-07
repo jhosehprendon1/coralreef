@@ -93,17 +93,7 @@ export const AppBar = () => {
           </ul>
         </nav>
         <div className="app_bar__options">
-          {!connected && <ConnectButton
-            onConnect={() => {
-              if (state && state.site === 'dashboard') {
-                history.replace({
-                  pathname: '/proko_fractionalize/sell/0',
-                  state: {
-                    site: 'sell'
-                  }
-                });
-              }
-            }} type="primary" className="app_bar__cta" />}
+          {!connected && <ConnectButton type="primary" className="app_bar__cta" />}
           {connected && (
             <div className="app_bar__options_info">
               {walletKey}

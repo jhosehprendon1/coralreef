@@ -13,10 +13,10 @@ import {
   InputNumber,
   Form,
 } from 'antd';
-import { ArtCard } from './../../components/ArtCard';
-import { UserSearch, UserValue } from './../../components/UserSearch';
-import { Confetti } from './../../components/Confetti';
-import './../styles.less';
+import { ArtCard } from '../../components/ArtCard';
+import { UserSearch, UserValue } from '../../components/UserSearch';
+import { Confetti } from '../../components/Confetti';
+import '../styles.less';
 import { mintNFT } from '../../actions';
 import ChevronIcon from '../../images/icons/chevron.svg';
 import {
@@ -85,12 +85,14 @@ export const ArtCreateView = () => {
     href: 'proko_fractionalize/art/create/1',
     text: 'Info',
     isActive: false
-  }, {
+   },
+   {
     href: 'proko_fractionalize/art/create/2',
     text: 'Royalties',
     isActive: false
-  }, {
-    href: 'proko_fractionalize/art/create/3',
+  },
+  {
+    href: 'proko_fractionalize/art/create/2',
     text: 'Launch',
     isActive: false
   }];

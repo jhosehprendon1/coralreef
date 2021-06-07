@@ -169,7 +169,7 @@ export default (props: {
             </div>
           </div>
         </div>
-        {[...fixedCreators, ...creators].length > 0 && (
+        {/* {[...fixedCreators, ...creators].length > 0 && (
         <div className="grid grid--12_cols">
           <div className="royalties__group grid--6_cols grid--4_offset">
             <div className="royalties__group_info">
@@ -186,13 +186,13 @@ export default (props: {
             />
           </div>
         </div>
-        )}
+        )} */}
         <div className="grid grid--12_cols">
           <div className="grid--6_cols grid--4_offset">
-            <span onClick={() => setShowCreatorsModal(true)}>
+            {/* <span onClick={() => setShowCreatorsModal(true)}>
               <span className="royalties__add_creator_icon">+</span>
               <span className="royalties__add_creator_text">Add another creator</span>
-            </span>
+            </span> */}
             <MetaplexModal
               visible={showCreatorsModal}
               onCancel={() => setShowCreatorsModal(false)}

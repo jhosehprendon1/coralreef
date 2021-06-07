@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Card, Avatar, CardProps, Button, Badge } from 'antd';
 import { Creator, MetadataCategory, useConnection } from '@oyster/common';
-import { ArtContent } from './../ArtContent';
+import { ArtContent } from '../ArtContent';
 import './index.less';
 import { getCountdown } from '../../utils/utils';
 import { useArt } from '../../hooks';

@@ -1,6 +1,6 @@
 import { TokenAccount, useUserAccounts } from '@oyster/common';
 import { SafetyDepositDraft } from '../actions/createAuctionManager';
-import { useMeta } from './../contexts';
+import { useMeta } from '../contexts';
 
 export const useUserArts = (): SafetyDepositDraft[] => {
   const {

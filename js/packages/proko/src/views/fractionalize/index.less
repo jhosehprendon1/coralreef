@@ -11,14 +11,29 @@
   justify-content: space-between;
   grid-column: 3 / span 8;
 
+
+  &__no_arts {
+    font-family: 'Nunito Regular';
+    color: #2A3287;
+    font-weight: 700;
+    font-size: 18px;
+    text-align: center;
+    grid-column: span 3;
+  }
+
   &__card {
     position: relative;
     
     .ant-image {
       overflow: hidden;
+      min-height: 220px;
+      max-height: 260px;
 
       img {
         transition: .6s transform cubic-bezier(.04,.72,.53,.97);
+        object-fit: cover;
+        min-height: 220px;
+        max-height: 260px;
       }
     }
 

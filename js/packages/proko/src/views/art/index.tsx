@@ -1,7 +1,7 @@
 import React from 'react';
 import { Row, Col, Divider, Layout, Tag, Badge } from 'antd';
 import { useParams } from 'react-router-dom';
-import { useArt } from './../../hooks';
+import { useArt } from '../../hooks';
 
 import './index.less';
 import { Artist } from '../../types';
