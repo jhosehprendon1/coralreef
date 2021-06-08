@@ -118,8 +118,8 @@ export default (props: {
         onClick={() => {
           toggleConfirm(true);
           props.confirm((resp: any) => {
-            console.log(resp);
             setSuccess(true);
+            setPkey(resp.marketPublicKey);
           });
         }}
       >Next</Button>
