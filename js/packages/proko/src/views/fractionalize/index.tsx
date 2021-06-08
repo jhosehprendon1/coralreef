@@ -210,17 +210,17 @@ export const Actions = () => {
       attributes={attributes}
       setAttributes={setAttributes}
       confirm={async (fn: Function) => {
-        // const inte = setInterval(
-        //   () => setProgress(prog => Math.min(prog + 1, 99)),
-        //   600,
-        // );
+        const inte = setInterval(
+          () => setProgress(prog => Math.min(prog + 1, 99)),
+          600,
+        );
 
         const fractResp = await createMintFractionalNFT(connection, wallet, attributes);
         // setStepsVisible(false);
         // gotoNextStep();
 
-        // clearInterval(inte);
-        // setProgress(0);
+        clearInterval(inte);
+        setProgress(0);
         fn(fractResp);
       }}
       connection={connection}
