@@ -27,6 +27,7 @@ import {
   useMint,
   Creator,
   Stepper,
+  MetaplexModal,
 } from '@oyster/common';
 import { Connection, PublicKey } from '@solana/web3.js';
 import { MintLayout } from '@solana/spl-token';
@@ -132,6 +133,7 @@ export const Actions = () => {
   const { connected, wallet } = useWallet();
   const { whitelistedCreatorsByCreator } = useMeta();
   const { step_param }: { step_param: string } = useParams();
+  const [progress, setProgress] = useState<number>(0);
   const history = useHistory();
   const mint = useMint(QUOTE_MINT);
   const { width } = useWindowDimensions();
@@ -207,12 +209,22 @@ export const Actions = () => {
   const reviewFractionalize = (<FractionalizeReview
       attributes={attributes}
       setAttributes={setAttributes}
-      confirm={async () => {
-        await createMintFractionalNFT(connection, wallet, attributes);
+      confirm={async (fn: Function) => {
+        // const inte = setInterval(
+        //   () => setProgress(prog => Math.min(prog + 1, 99)),
+        //   600,
+        // );
+
+        const fractResp = await createMintFractionalNFT(connection, wallet, attributes);
         // setStepsVisible(false);
-        gotoNextStep();
+        // gotoNextStep();
+
+        // clearInterval(inte);
+        // setProgress(0);
+        fn(fractResp);
       }}
-      connection={connection} />)
+      connection={connection}
+      progress={progress} />)
 
   const specifyTerms = (<FractionalizeSpecifyTerms
     attributes={attributes}
@@ -277,6 +289,50 @@ export const Actions = () => {
     </>
   );
 };
+
+
+// const WaitingStep = (props: {
+//   mint: Function;
+//   progress: number;
+//   confirm: Function;
+//   artCreated: boolean;
+//   visible: boolean;
+//   nft?: {
+//     metadataAccount: PublicKey;
+//   };
+// }) => {
+//   const [isVisible, toggleVisible] = useState(props.visible || false);
+//   useEffect(() => {
+//     const func = async () => {
+//       await props.mint();
+//       props.confirm();
+//     };
+//     func();
+//   }, []);
+
+//   return (
+//     <>
+//       <MetaplexModal className="waiting_step" onCancel={() => toggleVisible(false)} visible={isVisible} width={null}>
+//         {!props.artCreated &&
+//           <>
+
+//             <div className="waiting-title">
+//               Your creation is being uploaded to the decentralized web...
+//         </div>
+//             <Progress trailColor="#23ACDB" strokeColor="#E5226F" type="circle" percent={props.progress} />
+//             <div className="waiting-subtitle">This can take up to 1 minute.</div>
+//           </>}
+//         {props.artCreated &&
+//           <>
+//             <header>
+//               <img src={FishesImages} alt="" />
+//               <Congrats nft={props.nft} />
+//             </header>
+//           </>}
+//       </MetaplexModal>
+//     </>
+//   );
+// };
 
 const CopiesStep = (props: {
   attributes: FractionalizeState;

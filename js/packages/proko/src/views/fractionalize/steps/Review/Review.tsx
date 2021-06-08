@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import {
   Button,
   Modal,
+  Progress,
 } from 'antd';
 import { getConversionRates } from '../../../../utils/assets';
 import { Connection } from '@solana/web3.js';
@@ -14,9 +15,12 @@ export default (props: {
   setAttributes: Function,
   confirm: Function,
   attributes: any,
-  connection: Connection
+  connection: Connection,
+  progress?: number
 }) => {
   const [isConfirmVisible, toggleConfirm] = useState(false);
+  const [pkey, setPkey] = useState('');
+  const [success, setSuccess] = useState(false);
 
   return <>
     <section className="review">
@@ -34,9 +38,10 @@ export default (props: {
                   };
                 };
               }
-            }) => {
+            }, key: React.Key) => {
 
               return <ArtCard
+                key={key}
                 className="review__art_card"
                 image={item.metadata.info.extended.image}
                 file={item.metadata.info.data.name}
@@ -80,9 +85,10 @@ export default (props: {
     </section>
     <section className="art_ctas">
       <Modal className="review__modal" visible={isConfirmVisible} footer={null} onCancel={() => toggleConfirm(false)}>
-        <header>
+        {!props.progress && success && <><header>
           <img src={FishesImages} alt=""/>
           <p className="review__confirm_msg">Congratulations, your NFT has been fractionalized</p>
+          <p className="review__confirm_msg">This is your public key: {pkey}</p>
         </header>
         <div className="review__confirm_ctas">
           <Button
@@ -95,7 +101,15 @@ export default (props: {
             size="large"
             className="art_ctas__cta secondary_cta"
           >View Transaction</Button>
+        </div></>}
+        {props.progress && 
+        <>
+        <div className="waiting-title">
+            Your creation is being fractionalized...
         </div>
+        <Progress trailColor="#23ACDB" strokeColor="#E5226F" type="circle" percent={props.progress} />
+        <div className="waiting-subtitle">This can take up to 1 minute.</div>
+        </>}
       </Modal>
       <Button
         type="primary"
@@ -103,7 +117,10 @@ export default (props: {
         className="art_ctas__cta"
         onClick={() => {
           toggleConfirm(true);
-          props.confirm();
+          props.confirm((resp: any) => {
+            console.log(resp);
+            setSuccess(true);
+          });
         }}
       >Next</Button>
     </section>

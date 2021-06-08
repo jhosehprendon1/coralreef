@@ -121,5 +121,5 @@ export const createMintFractionalNFT = async (
 
   console.log('\x1b[33m Market: %s\x1b[0m', marketPublicKey.toString());
 
-  return { txid };
+  return { marketPublicKey: marketPublicKey.toString() };
 };
