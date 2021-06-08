@@ -65,7 +65,7 @@
     "test": "craco test",
     "eject": "react-scripts eject",
     "deploy:ar": "arweave deploy-dir  ../../build/proko --key-file ",
-    "deploy": "gh-pages -d ../../build/proko --repo https://github.com/solana-labs/oyster-meta",
+    "deploy": "gh-pages -d ../../build/proko --repo https://github.com/kornatisOiga/coralreef",
     "format:fix": "prettier --write \"**/*.+(js|jsx|ts|tsx|json|css|md)\""
   },
   "eslintConfig": {
