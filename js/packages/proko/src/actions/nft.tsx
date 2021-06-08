@@ -221,10 +221,14 @@ export const mintNFT = async (
     )
   ).json();
 
+
+  console.log('Arweave Result', result);
+
   const metadataFile = result.messages?.find(
     m => m.filename === RESERVED_TXN_MANIFEST,
   );
   if (metadataFile?.transactionId && wallet.publicKey) {
+    console.log('Enter if after arweave result')
     const updateInstructions: TransactionInstruction[] = [];
     const updateSigners: Keypair[] = [];
 

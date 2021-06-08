@@ -20,12 +20,12 @@ const Dashboard = (props: any) => {
           <img src={CoralRefDashArt} alt="" />
         </picture>
       </div>
-      <div className="fr_dashboard__text fr_dashboard__text--first"><span className="highlight">Fractionalization</span> it’s the concept of splitting up ownership of something so that many people can receive benefits from it in a proportion to the amount they own. It’s a traditional concept which already exists today. When applied to financial securities, fractionalisation has been around for hundreds of years — when you buy a share of a company, you are buying a fraction of ownership of it.</div>
-      <div className="fr_dashboard__text fr_dashboard__text--last">For many shares, the price of one unit is investible by an average retail investor, costing maybe only a few dollars. So ownership (and control) of an asset can be, and often is, fractionalised. It’s worth remembering that even one share usually offers voting rights at company AGMs and most shares will pay a dividend based on asset performance.</div>
+      <div className="fr_dashboard__text fr_dashboard__text--first">A creator who has minted an NFT may use Coral Reef to fractionalize the ownership of their work to obtain liquidity. This fractionalization will represent a percentage of the ownership and not a specific part of the NFT.</div>
+      <div className="fr_dashboard__text fr_dashboard__text--last">The creator chooses a number of tokens in which the property will be fractionalized, the starting price of the NFT, a range between 0-100% of the tokens to be sent to the exchange (Serum), which can be freely exchanged in the market before, during or after the auction.</div>
     </section>
   </div>;
 };
 
 export {
   Dashboard
-} 
+}
