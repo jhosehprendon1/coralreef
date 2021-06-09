@@ -1,3 +1,15 @@
+.columns_creator(@column) when (@column > 0) {
+  &--@{column}_cols {
+    grid-column-end: span @column;
+  }
+
+  &--@{column}_offset {
+    grid-column-start: @column;
+  }
+
+  .columns_creator(@column - 1);
+}
+
 .create_header {
   padding: 40px 0;
   text-align: center;
@@ -81,45 +93,7 @@
   display: grid;
   grid-template-columns: repeat(12, 1fr);
 
-  &--1_cols {
-    grid-column-end: span 1;
-  }
-
-  &--2_cols {
-    grid-column-end: span 2;
-  }
-
-  &--3_cols {
-    grid-column-end: span 3;
-  }
-
-  &--4_cols {
-    grid-column-end: span 4;
-  }
-
-  &--5_cols {
-    grid-column-end: span 5;
-  }
-
-  &--6_cols {
-    grid-column-end: span 6;
-  }
-
-  &--12_cols {
-    grid-column-end: span 12;
-  }
-
-  &--6_cols {
-    grid-column-end: span 6;
-  }
-
-  &--4_offset {
-    grid-column-start: 4;
-  }
-
-  &--3_offset {
-    grid-column-start: 3;
-  }
+  .columns_creator(12);
 
   &--final_row {
     text-align: center;

@@ -55,7 +55,6 @@ export default (props: {
 
         const additionalSol = (metadataRent + mintRent) / LAMPORT_MULTIPLIER;
 
-        console.log(props.progress);
         // TODO: add fees based on number of transactions and signers
         if (sol + additionalSol !== cost) {
           setCost(sol + additionalSol);
