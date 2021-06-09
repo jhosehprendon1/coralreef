@@ -113,9 +113,10 @@ export const ArtCreateView = () => {
   const launchStep = <Launch
     connection={connection}
     attributes={attributes}
+    progress={progress}
     confirm={() => {
       confirmArt(true);
-    }} />
+    }} />;
   const stepsContent = [
     {
       title: 'Create a new item · First time creating on CoralReef? Read our creator’s guide.',

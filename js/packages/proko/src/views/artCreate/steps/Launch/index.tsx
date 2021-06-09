@@ -23,6 +23,7 @@ export default (props: {
   confirm: () => void;
   attributes: IMetadataExtension;
   connection: Connection;
+  progress: number;
 }) => {
   const files = (props.attributes.properties?.files || []).filter(f => typeof f !== 'string') as File[];
   const fileNames = (props.attributes.properties?.files || []).map(f => typeof f === 'string' ? f : f?.name);
@@ -36,7 +37,7 @@ export default (props: {
       props.connection.getMinimumBalanceForRentExemption(MintLayout.span),
       props.connection.getMinimumBalanceForRentExemption(MAX_METADATA_LEN),
     ]);
-    if (files.length)
+    if (files.length && props.progress <= 0)
       getAssetCostToStore([
         ...files,
         new File([JSON.stringify(metadata)], 'metadata.json'),
@@ -54,8 +55,12 @@ export default (props: {
 
         const additionalSol = (metadataRent + mintRent) / LAMPORT_MULTIPLIER;
 
+        console.log(props.progress);
         // TODO: add fees based on number of transactions and signers
-        setCost(sol + additionalSol);
+        if (sol + additionalSol !== cost) {
+          setCost(sol + additionalSol);
+        }
+        
       });
   }, [files, setCost]);
 
