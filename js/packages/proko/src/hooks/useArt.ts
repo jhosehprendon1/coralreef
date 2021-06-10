@@ -146,7 +146,9 @@ export const useArt = (id?: PublicKey | string) => {
             }
 
             if (account.info.extended?.image) {
-              const file = `${account.info.data.uri}/${account.info.extended.image}`;
+              const file = account.info.extended.image.startsWith('http')
+                ? account.info.extended.image
+                : `${account.info.data.uri}/${account.info.extended.image}`;
               account.info.extended.image = routeCDN(file);
               setArt(
                 metadataToArt(
