@@ -10,7 +10,8 @@ import BN from 'bn.js';
 
 export const VAULT_PREFIX = 'vault';
 export enum VaultKey {
-  VaultV1 = 0,
+  Uninitialized = 0,
+  VaultV1 = 3,
   SafetyDepositBoxV1 = 1,
   ExternalPriceAccountV1 = 2,
 }
@@ -219,7 +220,7 @@ export const VAULT_SCHEMA = new Map<any, any>([
         ['fractionTreasury', 'pubkey'],
         ['redeemTreasury', 'pubkey'],
         ['allowFurtherShareCreation', 'u8'],
-        ['pricingLookupAddress', 'u8'],
+        ['pricingLookupAddress', 'pubkey'],
         ['tokenTypeCount', 'u8'],
         ['state', 'u8'],
         ['lockedPricePerShare', 'u64'],
@@ -255,6 +256,14 @@ export const VAULT_SCHEMA = new Map<any, any>([
 
 export const decodeVault = (buffer: Buffer) => {
   return deserializeUnchecked(VAULT_SCHEMA, Vault, buffer) as Vault;
+};
+
+export const decodeExternalPriceAccount = (buffer: Buffer) => {
+  return deserializeUnchecked(
+    VAULT_SCHEMA,
+    ExternalPriceAccount,
+    buffer,
+  ) as ExternalPriceAccount;
 };
 
 export const decodeSafetyDeposit = (buffer: Buffer) => {
@@ -444,7 +453,7 @@ export async function activateVault(
 
   const fractionMintAuthority = (
     await PublicKey.findProgramAddress(
-      [Buffer.from(VAULT_PREFIX), vaultProgramId.toBuffer()],
+      [Buffer.from(VAULT_PREFIX), vaultProgramId.toBuffer(), vault.toBuffer()],
       vaultProgramId,
     )
   )[0];
@@ -510,7 +519,7 @@ export async function combineVault(
 
   const burnAuthority = (
     await PublicKey.findProgramAddress(
-      [Buffer.from(VAULT_PREFIX), vaultProgramId.toBuffer()],
+      [Buffer.from(VAULT_PREFIX), vaultProgramId.toBuffer(), vault.toBuffer()],
       vaultProgramId,
     )
   )[0];
@@ -602,7 +611,7 @@ export async function withdrawTokenFromSafetyDepositBox(
 
   const transferAuthority = (
     await PublicKey.findProgramAddress(
-      [Buffer.from(VAULT_PREFIX), vaultProgramId.toBuffer()],
+      [Buffer.from(VAULT_PREFIX), vaultProgramId.toBuffer(), vault.toBuffer()],
       vaultProgramId,
     )
   )[0];
