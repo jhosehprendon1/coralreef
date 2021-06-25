@@ -13,6 +13,7 @@ import {
   AuctionView,
   HomeView,
   ArtworksView,
+  SiteInProgress,
 } from './views';
 import { UseWalletProvider } from 'use-wallet';
 import { CoingeckoProvider } from './contexts/coingecko';
@@ -33,7 +34,7 @@ export function Routes() {
               <AccountsProvider>
                 <CoingeckoProvider>
                   <MetaProvider>
-                    <AppLayout>
+                    <AppLayout hideNavBar={true}>
                       <Switch>
                         {/* <Route
                           exact
@@ -77,6 +78,11 @@ export function Routes() {
                         /> */}
                         <Route
                           exact
+                          path="/temp"
+                          component={() => <SiteInProgress />} />
+                        <Redirect from="*" to="/temp/" />
+                        <Route
+                          exact
                           path="/proko_fractionalize/"
                           component={() => <Dashboard />}
                         />
@@ -90,6 +96,7 @@ export function Routes() {
                           path="/proko_fractionalize/sell/:step_param?"
                           component={() => <Actions />}
                         />
+                        
                         <Redirect from="/" to="/proko_fractionalize/" />
                         {/* <Route path="/" component={() => <HomeView />} /> */}
                       </Switch>
