@@ -23,6 +23,7 @@ import { Dashboard, Actions } from './views/fractionalize';
 const { WalletProvider } = contexts.Wallet;
 const { ConnectionProvider } = contexts.Connection;
 const { AccountsProvider } = contexts.Accounts;
+const siteTemporaryHiddden = process.env.REACT_APP_TEMPORARY_UNAVAILABLE === 'true';
 
 export function Routes() {
   return (
@@ -34,7 +35,7 @@ export function Routes() {
               <AccountsProvider>
                 <CoingeckoProvider>
                   <MetaProvider>
-                    <AppLayout hideNavBar={true}>
+                    <AppLayout hideNavBar={siteTemporaryHiddden}>
                       <Switch>
                         {/* <Route
                           exact
@@ -76,11 +77,14 @@ export function Routes() {
                           path="/auction/:id/billing"
                           component={() => <BillingView />}
                         /> */}
-                        <Route
-                          exact
-                          path="/temp"
-                          component={() => <SiteInProgress />} />
-                        <Redirect from="*" to="/temp/" />
+
+                        {siteTemporaryHiddden && <>
+                          <Route
+                            exact
+                            path="/temp"
+                            component={() => <SiteInProgress />} />
+                          <Redirect from="*" to="/temp/" />
+                        </>}
                         <Route
                           exact
                           path="/proko_fractionalize/"
