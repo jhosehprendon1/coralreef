@@ -7,7 +7,7 @@ import { LABELS } from '../../constants';
 import { AppBar } from '../AppBar';
 import useWindowDimensions from '../../utils/layout';
 
-const { Header, Content } = Layout;
+const { Content } = Layout;
 
 const paddingForLayout = (width: number) => {
   if (width <= 768) return "5px 10px"
@@ -19,7 +19,7 @@ export const AppLayout = React.memo((props: any) => {
 
   return (
     <Layout title={LABELS.APP_TITLE} style={{}}>
-      <AppBar />
+      {!props.hideNavBar && <AppBar />}
       <Content>
         {props.children}
       </Content>

@@ -13,6 +13,7 @@ import {
   AuctionView,
   HomeView,
   ArtworksView,
+  SiteInProgress,
 } from './views';
 import { UseWalletProvider } from 'use-wallet';
 import { CoingeckoProvider } from './contexts/coingecko';
@@ -22,6 +23,7 @@ import { Dashboard, Actions } from './views/fractionalize';
 const { WalletProvider } = contexts.Wallet;
 const { ConnectionProvider } = contexts.Connection;
 const { AccountsProvider } = contexts.Accounts;
+const siteTemporaryHiddden = process.env.REACT_APP_TEMPORARY_UNAVAILABLE === 'true';
 
 export function Routes() {
   return (
@@ -33,7 +35,7 @@ export function Routes() {
               <AccountsProvider>
                 <CoingeckoProvider>
                   <MetaProvider>
-                    <AppLayout>
+                    <AppLayout hideNavBar={siteTemporaryHiddden}>
                       <Switch>
                         {/* <Route
                           exact
@@ -75,6 +77,14 @@ export function Routes() {
                           path="/auction/:id/billing"
                           component={() => <BillingView />}
                         /> */}
+
+                        {siteTemporaryHiddden && <>
+                          <Route
+                            exact
+                            path="/temp"
+                            component={() => <SiteInProgress />} />
+                          <Redirect from="*" to="/temp/" />
+                        </>}
                         <Route
                           exact
                           path="/proko_fractionalize/"
@@ -90,6 +100,7 @@ export function Routes() {
                           path="/proko_fractionalize/sell/:step_param?"
                           component={() => <Actions />}
                         />
+                        
                         <Redirect from="/" to="/proko_fractionalize/" />
                         {/* <Route path="/" component={() => <HomeView />} /> */}
                       </Switch>
