@@ -68,9 +68,10 @@ export const ArtView = () => {
             <div className="info-header">CREATED BY</div>
             <div className="creators">
               {(art.creators || [])
-                .map(creator => {
+                .map((creator, id) => {
                 return (
                   <div
+                    key={id}
                     className="info-content"
                     style={{ display: 'flex', alignItems: 'center' }}
                   >

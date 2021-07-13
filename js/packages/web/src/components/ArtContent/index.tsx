@@ -1,13 +1,18 @@
-import React, { Ref, useCallback, useEffect, useState } from 'react';
+import React, { Ref, useCallback, useEffect, useState, useRef } from 'react';
 import { Image } from 'antd';
 import { MetadataCategory } from '@oyster/common';
 import { MeshViewer } from '../MeshViewer';
 import { ThreeDots } from '../MyLoader';
 import { useCachedImage } from '../../hooks';
 import { Stream, StreamPlayerApi } from '@cloudflare/stream-react';
+import { useRecoilState } from 'recoil';
+import { artProperties } from '../../state';
+import { get, push } from '../../utils/cache';
+import { LegacyRef } from 'react';
 
 export const ArtContent = ({
   uri,
+  artId,
   extension,
   category,
   className,
@@ -15,8 +20,11 @@ export const ArtContent = ({
   style,
   files,
   active,
+  imgElRef,
+  onClickImage,
 }: {
   category?: MetadataCategory;
+  artId?: string;
   extension?: string;
   uri?: string;
   className?: string;
@@ -27,10 +35,14 @@ export const ArtContent = ({
   files?: string[];
   ref?: Ref<HTMLDivElement>;
   active?: boolean;
+  imgElRef?: Ref<HTMLImageElement> | undefined;
+  onClickImage?: Function
 }) => {
   const [loaded, setLoaded] = useState<boolean>(false);
   const [playerApi, setPlayerApi] = useState<StreamPlayerApi>();
   const src = useCachedImage(uri || '');
+  const artRef = useRef<HTMLDivElement>(null);
+  const [artDOMProperties, updateArtDetailsState] = useRecoilState(artProperties);
 
   const playerRef = useCallback(
     ref => {
@@ -87,16 +99,12 @@ export const ArtContent = ({
       </video>
     )
   ) : (
-    <Image
+    <img
       src={src}
-      preview={preview}
-      wrapperClassName={className}
-      loading="lazy"
-      wrapperStyle={{ ...style }}
       onLoad={e => {
         setLoaded(true);
       }}
-      placeholder={<ThreeDots />}
+      ref={imgElRef}
       {...(loaded ? {} : { height: 200 })}
     />
   );

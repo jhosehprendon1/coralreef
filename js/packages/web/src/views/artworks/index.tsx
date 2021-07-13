@@ -1,12 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { ArtCard } from '../../components/ArtCard';
 import { Layout, Row, Col, Tabs } from 'antd';
 import Masonry from 'react-masonry-css';
-import { Link } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
 import { useUserArts } from '../../hooks';
 import { useMeta } from '../../contexts';
 import { CardLoader } from '../../components/MyLoader';
-import { useWallet } from '@oyster/common';
+import { chain, useWallet } from '@oyster/common';
+import './index.less';
+import { useRecoilValue } from 'recoil';
+import { artProperties } from '../../state';
 
 const { TabPane } = Tabs;
 
@@ -21,14 +24,55 @@ export enum ArtworkViewState {
 export const ArtworksView = () => {
   const { connected } = useWallet();
   const ownedMetadata = useUserArts();
+  const backdropRef = useRef<HTMLDivElement>(null);
   const { metadata, isLoading } = useMeta();
   const [activeKey, setActiveKey] = useState(ArtworkViewState.Metaplex);
+  const currentArtProperties = useRecoilValue(artProperties);
+  const [transitionArtCoords, updateTransitionArtCoords] = useState({
+    style: {
+      top: currentArtProperties.detailTop,
+      left: currentArtProperties.detailLeft,
+      width: `${currentArtProperties.detailWidth}px`,
+      height: `${currentArtProperties.detailHeight}px`
+    },
+    loaded: false
+  });
+  const [transitionArtModifiers, updateTransitionArtMod] = useState('');
+  const [backdropModifier, updateBackdropModifier] = useState('');
   const breakpointColumnsObj = {
     default: 4,
     1100: 3,
     700: 2,
     500: 1,
   };
+
+  if (!transitionArtCoords.loaded) {
+    let steps = chain();
+
+    steps.step(() => {
+      const style = {
+        top: currentArtProperties.top,
+        left: currentArtProperties.left,
+        width: `${currentArtProperties.width}px`,
+        height: `${currentArtProperties.height}px`
+      };
+
+      updateTransitionArtCoords({
+        style,
+        loaded: true
+      });
+      updateBackdropModifier(' backdrop--transparent');
+      updateTransitionArtMod(' transition_image--transformed');
+    }, '.1s')
+    
+    if (steps) {
+      steps.step(() => {
+        updateBackdropModifier(' backdrop--transparent backdrop--hidden');
+        updateTransitionArtMod(' transition_image--hidden');
+      }, '.6s');
+    }
+      
+  }
 
   const items =
     activeKey === ArtworkViewState.Metaplex
@@ -70,39 +114,50 @@ export const ArtworksView = () => {
 
   return (
     <Layout style={{ margin: 0, marginTop: 30 }}>
-      <Content style={{ display: 'flex', flexWrap: 'wrap' }}>
-        <Col style={{ width: '100%', marginTop: 10 }}>
-          <Row>
-            <Tabs
-              activeKey={activeKey}
-              onTabClick={key => setActiveKey(key as ArtworkViewState)}
-            >
-              <TabPane
-                tab={<span className="tab-title">All</span>}
-                key={ArtworkViewState.Metaplex}
+      {currentArtProperties.artId !== ''
+        ? <>
+            <div className={`backdrop${backdropModifier}`} ref={backdropRef}></div>
+            <div style={{
+                  position: 'fixed',
+                  ...transitionArtCoords.style
+                }} className={`transition_image${transitionArtModifiers}`}>
+              <img src={currentArtProperties.src} alt="" />
+            </div>
+          </>
+        : null}
+        <Content style={{ display: 'flex', flexWrap: 'wrap' }}>
+          <Col style={{ width: '100%', marginTop: 10 }}>
+            <Row>
+              <Tabs
+                activeKey={activeKey}
+                onTabClick={key => setActiveKey(key as ArtworkViewState)}
               >
-                {artworkGrid}
-              </TabPane>
-              {connected && (
                 <TabPane
-                  tab={<span className="tab-title">Owned</span>}
-                  key={ArtworkViewState.Owned}
+                  tab={<span className="tab-title">All</span>}
+                  key={ArtworkViewState.Metaplex}
                 >
                   {artworkGrid}
                 </TabPane>
-              )}
-              {connected && (
-                <TabPane
-                  tab={<span className="tab-title">Created</span>}
-                  key={ArtworkViewState.Created}
-                >
-                  {artworkGrid}
-                </TabPane>
-              )}
-            </Tabs>
-          </Row>
-        </Col>
-      </Content>
+                {connected && (
+                  <TabPane
+                    tab={<span className="tab-title">Owned</span>}
+                    key={ArtworkViewState.Owned}
+                  >
+                    {artworkGrid}
+                  </TabPane>
+                )}
+                {connected && (
+                  <TabPane
+                    tab={<span className="tab-title">Created</span>}
+                    key={ArtworkViewState.Created}
+                  >
+                    {artworkGrid}
+                  </TabPane>
+                )}
+              </Tabs>
+            </Row>
+          </Col>
+        </Content>
     </Layout>
   );
 };

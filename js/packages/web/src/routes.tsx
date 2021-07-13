@@ -13,12 +13,14 @@ import {
   AuctionView,
   HomeView,
   ArtworksView,
+  ArtDetail,
 } from './views';
 import { UseWalletProvider } from 'use-wallet';
 import { CoingeckoProvider } from './contexts/coingecko';
 import { BillingView } from './views/auction/billing';
 import { AdminView } from './views/admin';
 import { ConfettiProvider } from './components/Confetti';
+import { RecoilRoot } from 'recoil';
 const { WalletProvider } = contexts.Wallet;
 const { ConnectionProvider } = contexts.Connection;
 const { AccountsProvider } = contexts.Accounts;
@@ -34,56 +36,58 @@ export function Routes() {
                 <CoingeckoProvider>
                   <MetaProvider>
                     <ConfettiProvider>
-                      <AppLayout>
-                        <Switch>
-                          <Route
-                            exact
-                            path="/admin"
-                            component={() => <AdminView />}
-                          />
-                          <Route
-                            exact
-                            path="/art/create/:step_param?"
-                            component={() => <ArtCreateView />}
-                          />
-                          <Route
-                            exact
-                            path="/artworks/:id?"
-                            component={() => <ArtworksView />}
-                          />
-                          <Route
-                            exact
-                            path="/art/:id"
-                            component={() => <ArtView />}
-                          />
-                          <Route
-                            exact
-                            path="/artists/:id"
-                            component={() => <ArtistView />}
-                          />
-                          <Route
-                            exact
-                            path="/artists"
-                            component={() => <ArtistsView />}
-                          />
-                          <Route
-                            exact
-                            path="/auction/create/:step_param?"
-                            component={() => <AuctionCreateView />}
-                          />
-                          <Route
-                            exact
-                            path="/auction/:id"
-                            component={() => <AuctionView />}
-                          />
-                          <Route
-                            exact
-                            path="/auction/:id/billing"
-                            component={() => <BillingView />}
-                          />
-                          <Route path="/" component={() => <HomeView />} />
-                        </Switch>
-                      </AppLayout>
+                      <RecoilRoot>
+                        <AppLayout>
+                          <Switch>
+                            <Route
+                              exact
+                              path="/admin"
+                              component={() => <AdminView />}
+                            />
+                            <Route
+                              exact
+                              path="/art/create/:step_param?"
+                              component={() => <ArtCreateView />}
+                            />
+                            <Route
+                              exact
+                              path="/artworks/:id?"
+                              component={() => <ArtworksView />}
+                            />
+                            <Route
+                              exact
+                              path="/art/:id"
+                              component={() => <ArtDetail />}
+                            />
+                            <Route
+                              exact
+                              path="/artists/:id"
+                              component={() => <ArtistView />}
+                            />
+                            <Route
+                              exact
+                              path="/artists"
+                              component={() => <ArtistsView />}
+                            />
+                            <Route
+                              exact
+                              path="/auction/create/:step_param?"
+                              component={() => <AuctionCreateView />}
+                            />
+                            <Route
+                              exact
+                              path="/auction/:id"
+                              component={() => <AuctionView />}
+                            />
+                            <Route
+                              exact
+                              path="/auction/:id/billing"
+                              component={() => <BillingView />}
+                            />
+                            <Route path="/" component={() => <HomeView />} />
+                          </Switch>
+                        </AppLayout>
+                      </RecoilRoot>
                     </ConfettiProvider>
                   </MetaProvider>
                 </CoingeckoProvider>
