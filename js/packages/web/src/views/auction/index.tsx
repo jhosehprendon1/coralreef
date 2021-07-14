@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Row, Col, Button, Image, Tooltip, Carousel } from 'antd';
+import { Row, Col, Button, Skeleton, Carousel } from 'antd';
 import { AuctionCard } from '../../components/AuctionCard';
 import {
   AuctionView as Auction,
@@ -9,6 +9,7 @@ import {
   useAuction,
   useBidsForAuction,
   useCreators,
+  useExtendedArt,
 } from '../../hooks';
 import { ArtContent } from '../../components/ArtContent';
 
@@ -22,11 +23,12 @@ import {
   fromLamports,
   useMint,
   useWallet,
+  AuctionState,
 } from '@oyster/common';
-import { MetaAvatar } from '../../components/MetaAvatar';
 import { MintInfo } from '@solana/spl-token';
 import useWindowDimensions from '../../utils/layout';
 import { CheckOutlined } from '@ant-design/icons';
+import { useMemo } from 'react';
 
 export const AuctionItem = ({
   item,
@@ -39,8 +41,7 @@ export const AuctionItem = ({
   size: number;
   active?: boolean;
 }) => {
-  const art = useArt(item.metadata.pubkey);
-  const ref = useRef<HTMLDivElement>(null);
+  const id = item.metadata.pubkey;
   var style: React.CSSProperties = {
     transform:
       index === 0
@@ -52,24 +53,19 @@ export const AuctionItem = ({
     transformOrigin: 'right bottom',
     position: index !== 0 ? 'absolute' : 'static',
     zIndex: -1 * index,
-    border: size > 1 ? '1px solid #282828' : '',
     marginLeft: size > 1 && index === 0 ? '0px' : 'auto',
     background: 'black',
     boxShadow: 'rgb(0 0 0 / 10%) 12px 2px 20px 14px',
+    height: 300,
   };
   return (
-    <div ref={ref}>
-      <ArtContent
-        category={art.category}
-        uri={art.image}
-        extension={art.image}
-        files={art.files}
-        className="artwork-image stack-item"
-        style={style}
-        ref={ref}
-        active={active}
-      />
-    </div>
+    <ArtContent
+      pubkey={id}
+      className="artwork-image stack-item"
+      style={style}
+      active={active}
+      allowMeshRender={true}
+    />
   );
 };
 
@@ -79,48 +75,63 @@ export const AuctionView = () => {
   const auction = useAuction(id);
   const [currentIndex, setCurrentIndex] = useState(0);
   const art = useArt(auction?.thumbnail.metadata.pubkey);
+  const { ref, data } = useExtendedArt(auction?.thumbnail.metadata.pubkey);
   const creators = useCreators(auction);
   const edition = '1 of 1';
   const nftCount = auction?.items.flat().length;
   const winnerCount = auction?.items.length;
 
+
+  const hasDescription = data === undefined || data.description === undefined
+  const description = data?.description;
+
+  const items = [
+    ...(auction?.items
+      .flat()
+      .reduce((agg, item) => {
+        agg.set(item.metadata.pubkey.toBase58(), item);
+        return agg;
+      }, new Map<string, AuctionViewItem>())
+      .values() || []),
+    auction?.participationItem,
+  ].map((item, index, arr) => {
+    if (!item || !item?.metadata || !item.metadata?.pubkey) {
+      return null;
+    }
+
+    return (
+      <AuctionItem
+        key={item.metadata.pubkey.toBase58()}
+        item={item}
+        index={index}
+        size={arr.length}
+        active={index === currentIndex}
+      ></AuctionItem>
+    );
+  });
+
   return (
     <>
-      <Row justify="space-around">
+      <Row justify="space-around" ref={ref}>
         <Col span={24} md={12} className="pr-4">
-          <div className="">
-          <Carousel autoplay={false} afterChange={(index) => setCurrentIndex(index)}>
-              {[
-                ...(auction?.items.flat()
-                  .reduce((agg, item) => {
-                      agg.set(item.metadata.pubkey.toBase58(), item);
-                      return agg;
-                    }, new Map<string, AuctionViewItem>()).values() || []),
-                auction?.participationItem,
-              ].map((item, index, arr) => {
-                if (!item || !item?.metadata || !item.metadata?.pubkey) {
-                  return null;
-                }
+          <div className="auction-view" style={{ minHeight: 300 }}>
 
-                return (
-                    <AuctionItem
-                      item={item}
-                      index={index}
-                      size={arr.length}
-                      active={index === currentIndex}
-                    ></AuctionItem>
-                );
-              })}
-              </Carousel>
+            <Carousel
+              autoplay={false}
+              afterChange={index => setCurrentIndex(index)}
+            >
+              {items}
+            </Carousel>
           </div>
-          <h6>NUMBER OF WINNERS</h6>
-          <h1>{winnerCount}</h1>
-          <h6>NUMBER OF NFTs</h6>
-          <h1>{nftCount}</h1>
+          <h6>Number Of Winners</h6>
+          <h1>{winnerCount === undefined ?  <Skeleton paragraph={{ rows: 0 }} /> : winnerCount}</h1>
+          <h6>Number Of NFTs</h6>
+          <h1>{nftCount === undefined ?  <Skeleton paragraph={{ rows: 0 }} /> : nftCount}</h1>
           <h6>About this {nftCount === 1 ? 'NFT' : 'Collection'}</h6>
           <p>
-            {art.about || (
-              <div style={{ fontStyle: 'italic' }}>
+            {hasDescription && <Skeleton paragraph={{ rows: 3 }} />}
+            {description || (
+              winnerCount !== undefined && <div style={{ fontStyle: 'italic' }}>
                 No description provided.
               </div>
             )}
@@ -134,9 +145,7 @@ export const AuctionView = () => {
         </Col>
 
         <Col span={24} md={12}>
-          <h2 className="art-title">
-            {art.title}
-          </h2>
+          <h2 className="art-title">{art.title || <Skeleton paragraph={{ rows: 0 }} />}</h2>
           <Row gutter={[50, 0]} style={{ marginRight: 'unset' }}>
             <Col>
               <h6>Edition</h6>
@@ -169,6 +178,7 @@ export const AuctionView = () => {
             </Col>
           </Row>
 
+          {!auction && <Skeleton paragraph={{ rows: 6 }} />}
           {auction && <AuctionCard auctionView={auction} />}
           <AuctionBids auctionView={auction} />
         </Col>
@@ -177,8 +187,8 @@ export const AuctionView = () => {
   );
 };
 
-const BidLine = (props: { bid: any; index: number; mint?: MintInfo }) => {
-  const { bid, index, mint } = props;
+const BidLine = (props: { bid: any; index: number; mint?: MintInfo, isCancelled?: boolean, isActive?: boolean }) => {
+  const { bid, index, mint, isCancelled, isActive } = props;
   const { wallet } = useWallet();
   const bidder = bid.info.bidderPubkey.toBase58();
   const isme = wallet?.publicKey?.toBase58() === bidder;
@@ -189,6 +199,8 @@ const BidLine = (props: { bid: any; index: number; mint?: MintInfo }) => {
         width: '100%',
         alignItems: 'center',
         padding: '3px 0',
+        position: 'relative',
+        opacity: isActive ? undefined: 0.5,
         ...(isme
           ? {
               backgroundColor: '#ffffff21',
@@ -196,6 +208,7 @@ const BidLine = (props: { bid: any; index: number; mint?: MintInfo }) => {
           : {}),
       }}
     >
+      {isCancelled && <div style={{ position: 'absolute', left: 0, width: '100%', height: 1, background: 'grey', top: 'calc(50% - 1px)', zIndex: 2 }}/>}
       <Col
         span={2}
         style={{
@@ -203,7 +216,7 @@ const BidLine = (props: { bid: any; index: number; mint?: MintInfo }) => {
           paddingRight: 10,
         }}
       >
-        <div
+        {!isCancelled && <div
           style={{
             opacity: 0.8,
             fontWeight: 700,
@@ -216,7 +229,7 @@ const BidLine = (props: { bid: any; index: number; mint?: MintInfo }) => {
             </>
           )}
           {index + 1}
-        </div>
+        </div>}
       </Col>
       <Col span={16}>
         <Row>
@@ -248,19 +261,47 @@ export const AuctionBids = ({
   auctionView?: Auction | null;
 }) => {
   const bids = useBidsForAuction(auctionView?.auction.pubkey || '');
+
   const mint = useMint(auctionView?.auction.info.tokenMint);
   const { width } = useWindowDimensions();
 
   const [showHistoryModal, setShowHistoryModal] = useState<boolean>(false);
 
-  if (bids.length < 1) return null;
+  const winnersCount = auctionView?.auction.info.bidState.max.toNumber() || 0;
+  const activeBids = auctionView?.auction.info.bidState.bids || [];
+  const activeBidders = useMemo(() => {
+    return new Set(activeBids.map(b => b.key.toBase58()))
+  }, [activeBids]);
+
+  const auctionState = auctionView ? auctionView.auction.info.state : AuctionState.Created;
+  const bidLines = useMemo(() => {
+    let activeBidIndex = 0;
+    return bids.map((bid, index) => {
+      let isCancelled = (index < winnersCount  && !!bid.info.cancelled) ||
+        (auctionState !== AuctionState.Ended && !!bid.info.cancelled);
+
+      let line = <BidLine
+        bid={bid}
+        index={activeBidIndex}
+        key={index}
+        mint={mint}
+        isCancelled={isCancelled}
+        isActive={!bid.info.cancelled} />;
+
+      if (!isCancelled) {
+        activeBidIndex++;
+      }
+
+      return line;
+    });
+  }, [auctionState, bids, activeBidders]);
+
+  if (!auctionView || bids.length < 1) return null;
 
   return (
     <Col style={{ width: '100%' }}>
       <h6>Bid History</h6>
-      {bids.slice(0, 10).map((bid, index) => {
-        return <BidLine bid={bid} index={index} key={index} mint={mint} />;
-      })}
+      {bidLines.slice(0, 10)}
       {bids.length > 10 && (
         <div
           className="full-history"
@@ -291,9 +332,7 @@ export const AuctionBids = ({
             width: '100%',
           }}
         >
-          {bids.map((bid, index) => {
-            return <BidLine bid={bid} index={index} key={index} mint={mint} />;
-          })}
+          {bidLines}
         </div>
       </MetaplexModal>
     </Col>

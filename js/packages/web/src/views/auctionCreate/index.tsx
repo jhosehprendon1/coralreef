@@ -30,12 +30,12 @@ import {
   Creator,
   PriceFloor,
   PriceFloorType,
+  IPartialCreateAuctionArgs,
 } from '@oyster/common';
 import {
   Connection,
   LAMPORTS_PER_SOL,
   PublicKey,
-  SystemProgram,
 } from '@solana/web3.js';
 import { MintLayout } from '@solana/spl-token';
 import { useHistory, useParams } from 'react-router-dom';
@@ -112,7 +112,9 @@ export interface AuctionState {
   endTS?: number;
 
   auctionDuration?: number;
+  auctionDurationType?: 'days' | 'hours' | 'minutes';
   gapTime?: number;
+  gapTimeType?: 'days' | 'hours' | 'minutes';
   tickSizeEndingPhase?: number;
 
   spots?: number;
@@ -146,6 +148,8 @@ export const AuctionCreateView = () => {
     items: [],
     category: AuctionCategory.Open,
     saleType: 'auction',
+    auctionDurationType: 'minutes',
+    gapTimeType: 'minutes',
     winnersCount: 1,
     startSaleTS: undefined,
     startListTS: undefined,
@@ -306,14 +310,45 @@ export const AuctionCreateView = () => {
       console.log('Tiered settings', settings);
     }
 
+    const auctionSettings: IPartialCreateAuctionArgs = {
+      winners: winnerLimit,
+      endAuctionAt: new BN((attributes.auctionDuration || 0) * (
+        attributes.auctionDurationType == "days"
+        ? (60 * 60 * 24) // 1 day in seconds
+        : (
+          attributes.auctionDurationType == "hours"
+          ? (60 * 60) // 1 hour in seconds
+          : 60 // 1 minute in seconds
+        )
+      )), // endAuctionAt is actually auction duration, poorly named, in seconds
+      auctionGap: new BN((attributes.gapTime || 0) * (
+        attributes.gapTimeType == "days"
+        ? (60 * 60 * 24) // 1 day in seconds
+        : (
+          attributes.gapTimeType == "hours"
+          ? (60 * 60) // 1 hour in seconds
+          : 60 // 1 minute in seconds
+        )
+      )),
+      priceFloor: new PriceFloor({
+        type: attributes.priceFloor
+          ? PriceFloorType.Minimum
+          : PriceFloorType.None,
+        minPrice: new BN((attributes.priceFloor || 0) * LAMPORTS_PER_SOL),
+      }),
+      tokenMint: QUOTE_MINT,
+      gapTickSizePercentage: attributes.tickSizeEndingPhase || null,
+      tickSize: attributes.priceTick
+        ? new BN(attributes.priceTick * LAMPORTS_PER_SOL)
+        : null,
+    };
+
     const _auctionObj = await createAuctionManager(
       connection,
       wallet,
       whitelistedCreatorsByCreator,
       settings,
-      winnerLimit,
-      new BN((attributes.auctionDuration || 0) * 60), // endAuctionAt is actually auction duration, poorly named, in seconds
-      new BN((attributes.gapTime || 0) * 60),
+      auctionSettings,
       attributes.category === AuctionCategory.Open
         ? []
         : attributes.category !== AuctionCategory.Tiered
@@ -323,12 +358,6 @@ export const AuctionCreateView = () => {
         ? attributes.items[0]
         : attributes.participationNFT,
       QUOTE_MINT,
-      new PriceFloor({
-        type: attributes.priceFloor
-          ? PriceFloorType.Minimum
-          : PriceFloorType.None,
-        minPrice: new BN((attributes.priceFloor || 0) * LAMPORTS_PER_SOL),
-      }),
     );
     setAuctionObj(_auctionObj);
   };
@@ -876,7 +905,7 @@ const PriceAuction = (props: {
               />
             </label>
           )}
-          {props.attributes.category != AuctionCategory.Open && (
+          {props.attributes.category !== AuctionCategory.Open && (
             <label className="action-field">
               <span className="field-title">Price Floor</span>
               <span className="field-info">
@@ -1127,17 +1156,31 @@ const EndingPhaseAuction = (props: {
       </Row>
       <Row className="content-action">
         <Col className="section" xl={24}>
-          <label className="action-field">
+          <div className="action-field">
             <span className="field-title">Auction Duration</span>
             <span className="field-info">
               This is how long the auction will last for.
             </span>
             <Input
-              type="number"
+              addonAfter={(
+                <Select 
+                  defaultValue={props.attributes.auctionDurationType} 
+                  onChange={
+                    value =>
+                      props.setAttributes({
+                        ...props.attributes,
+                        auctionDurationType: value,
+                      })
+                  }>
+                  <Option value="minutes">Minutes</Option>
+                  <Option value="hours">Hours</Option>
+                  <Option value="days">Days</Option>
+                </Select>
+              )}
               autoFocus
+              type="number"
               className="input"
-              placeholder="Duration in minutes"
-              suffix="minutes"
+              placeholder="Set the auction duration"
               onChange={info =>
                 props.setAttributes({
                   ...props.attributes,
@@ -1145,9 +1188,9 @@ const EndingPhaseAuction = (props: {
                 })
               }
             />
-          </label>
+          </div>
 
-          <label className="action-field">
+          <div className="action-field">
             <span className="field-title">Gap Time</span>
             <span className="field-info">
               The final phase of the auction will begin when there is this much
@@ -1155,10 +1198,24 @@ const EndingPhaseAuction = (props: {
               will extend the end time by this same duration.
             </span>
             <Input
+              addonAfter={(
+                <Select 
+                  defaultValue={props.attributes.gapTimeType}
+                  onChange={
+                    value => 
+                      props.setAttributes({
+                        ...props.attributes,
+                        gapTimeType: value,
+                      })
+                  }>
+                  <Option value="minutes">Minutes</Option>
+                  <Option value="hours">Hours</Option>
+                  <Option value="days">Days</Option>
+                </Select>
+              )}
               type="number"
               className="input"
-              placeholder="Duration in minutes"
-              suffix="minutes"
+              placeholder="Set the gap time"
               onChange={info =>
                 props.setAttributes({
                   ...props.attributes,
@@ -1166,7 +1223,7 @@ const EndingPhaseAuction = (props: {
                 })
               }
             />
-          </label>
+          </div>
 
           <label className="action-field">
             <span className="field-title">Tick Size for Ending Phase</span>
@@ -1362,13 +1419,13 @@ const TierTableStep = (props: {
                     if (items[0]) {
                       const existing = props.attributes.items.find(
                         it =>
-                          it.metadata.pubkey.toBase58() ==
+                          it.metadata.pubkey.toBase58() ===
                           items[0].metadata.pubkey.toBase58(),
                       );
                       if (!existing) newItems.push(items[0]);
                       const index = newItems.findIndex(
                         it =>
-                          it.metadata.pubkey.toBase58() ==
+                          it.metadata.pubkey.toBase58() ===
                           items[0].metadata.pubkey.toBase58(),
                       );
 
@@ -1392,7 +1449,7 @@ const TierTableStep = (props: {
                       const othersWithSameItem = newTiers.find(c =>
                         c.items.find(
                           it =>
-                            it.safetyDepositBoxIndex ==
+                            it.safetyDepositBoxIndex ===
                             (i as WinningConfigItem).safetyDepositBoxIndex,
                         ),
                       );
@@ -1460,7 +1517,7 @@ const TierTableStep = (props: {
                       </Option>
                     </Select>
 
-                    {(i as WinningConfigItem).winningConfigType ==
+                    {(i as WinningConfigItem).winningConfigType ===
                       WinningConfigType.Printing && (
                       <label className="action-field">
                         <span className="field-title">

@@ -1,9 +1,4 @@
-import {
-  Keypair,
-  Connection,
-  PublicKey,
-  TransactionInstruction,
-} from '@solana/web3.js';
+import { Keypair, Connection, TransactionInstruction } from '@solana/web3.js';
 import {
   Vault,
   ParsedAccount,
@@ -14,6 +9,7 @@ import {
   VaultState,
   sendTransactionsWithManualRetry,
   decodeExternalPriceAccount,
+  findProgramAddress,
 } from '@oyster/common';
 
 import BN from 'bn.js';
@@ -39,7 +35,7 @@ export async function unwindVault(
   let currSigners: Keypair[] = [];
   let currInstructions: TransactionInstruction[] = [];
 
-  if (vault.info.state == VaultState.Inactive) {
+  if (vault.info.state === VaultState.Inactive) {
     console.log('Vault is inactive, combining');
     const epa = await connection.getAccountInfo(
       vault.info.pricingLookupAddress,
@@ -57,7 +53,6 @@ export async function unwindVault(
           vault.info.redeemTreasury,
           decoded.priceMint,
           vault.info.pricingLookupAddress,
-          false,
         );
 
       signers.push(cvSigners);
@@ -82,7 +77,7 @@ export async function unwindVault(
   for (let i = 0; i < boxes.length; i++) {
     let nft = boxes[i];
     const ata = (
-      await PublicKey.findProgramAddress(
+      await findProgramAddress(
         [
           wallet.publicKey.toBuffer(),
           PROGRAM_IDS.token.toBuffer(),

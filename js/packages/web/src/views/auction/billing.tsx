@@ -11,7 +11,6 @@ import {
 import { ArtContent } from '../../components/ArtContent';
 import {
   useConnection,
-  useUserAccounts,
   contexts,
   BidderMetadata,
   ParsedAccount,
@@ -19,10 +18,10 @@ import {
   BidderPot,
   fromLamports,
   useMint,
-  shortenAddress,
   getBidderPotKey,
   programIds,
   Bid,
+  useUserAccounts,
 } from '@oyster/common';
 import { useMeta } from '../../contexts';
 import {
@@ -231,7 +230,6 @@ export function useBillingInfo({ auctionView }: { auctionView: AuctionView }) {
   const {
     bidRedemptions,
     bidderMetadataByAuctionAndBidder,
-    bidderPotsByAuctionAndBidder,
   } = useMeta();
   const auctionKey = auctionView.auction.pubkey.toBase58();
 
@@ -376,7 +374,8 @@ export const InnerBillingView = ({
   connection: Connection;
   mint: MintInfo;
 }) => {
-  const art = useArt(auctionView.thumbnail.metadata.pubkey);
+  const id = auctionView.thumbnail.metadata.pubkey;
+  const art = useArt(id);
   const balance = useUserBalance(auctionView.auction.info.tokenMint);
   const [escrowBalance, setEscrowBalance] = useState<number | undefined>();
   const { whitelistedCreatorsByCreator } = useMeta();
@@ -414,11 +413,9 @@ export const InnerBillingView = ({
         >
           <Col span={12}>
             <ArtContent
-              category={art.category}
-              uri={art.image}
-              extension={art.image}
-              files={art.files}
+              pubkey={id}
               className="artwork-image"
+              allowMeshRender={true}
             />
           </Col>
           <Col span={12}>

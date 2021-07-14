@@ -1,27 +1,34 @@
 <p align="center">
-  <a href="https://coralreef.art">
-    <img alt="Coral Reef" src="https://coralreef.art/meta.svg" width="250" />
+  <a href="https://metaplex.com">
+    <img alt="Metaplex" src="https://metaplex.com/meta.svg" width="250" />
   </a>
 </p>
 
-Coral Reef is a protocol built on top of Solana that allows:
+Metaplex is a protocol built on top of Solana that allows:
 
 - **Creating/Minting** non-fungible tokens;
 - **Starting** a variety of auctions for primary/secondary sales;
 - and **Visualizing** NFTs in a standard way across wallets and applications.
 
-Coral Reef is comprised of two core components: an on-chain program, and a self-hosted front-end web2 application.
+Metaplex is comprised of two core components: an on-chain program, and a self-hosted front-end web2 application.
+
+## In Depth Developer's Guide
+
+If you want to deep dive on the Architecture, you can do so here:
+
+https://www.notion.so/Metaplex-Developer-Guide-afefbc19841744c28587ab948a08cfac
 
 ## Installing
 
-Clone the repo, and run `deploy-web.sh`.
+Clone the repo, and run `yarn start` to deploy.
 
 ```bash
-$ git clone https://github.com/kornatisOiga/coralreef.git
-$ cd coralreef
+$ git clone https://github.com/metaplex-foundation/metaplex.git
+$ cd metaplex
 $ cd js
 $ yarn install
-$ ./deploy-web.sh
+$ yarn bootstrap
+$ yarn start
 ```
 
 ## Rust Programs
@@ -29,13 +36,21 @@ $ ./deploy-web.sh
 The Rust programs will soon be added to this repo with JavaScript
 bindings that allow interactivity.
 
+## Community
+
+We have a few channels for contact:
+
+- [Discord](https://discord.gg/metaplex)
+- [@metaplexNFT](https://twitter.com/metaplexNFT) on Twitter
+- [GitHub Issues](https://github.com/metaplex-foundation/metaplex/issues)
+
 # Protocol
 
 ## Non-fungible tokens
 
-Coral Reef's non-fungible-token standard is a part of the Solana Program Library (SPL), and can be characterized as a unique token with a fixed supply of 1 and 0 decimals. We extended the basic definition of an NFT on Solana to include additional metadata such as URI as defined in ERC-721 on Ethereum.
+Metaplex's non-fungible-token standard is a part of the Solana Program Library (SPL), and can be characterized as a unique token with a fixed supply of 1 and 0 decimals. We extended the basic definition of an NFT on Solana to include additional metadata such as URI as defined in ERC-721 on Ethereum.
 
-Below are the types of NFTs that can be created using the Coral Reef protocol.
+Below are the types of NFTs that can be created using the Metaplex protocol.
 
 ### **Master Edition**
 
@@ -49,7 +64,7 @@ A notable and desirable effect of master editions is that as prints are sold, th
 
 A **print** represents a copy of an NFT, and is created from a Master Edition. Each print has an edition number associated with it.
 
-Usually, prints are created as a part of an auction that has happened on Coral Reef, but they could also be created by the creator manually.
+Usually, prints are created as a part of an auction that has happened on Metaplex, but they could also be created by the creator manually.
 
 For limited auctions, each print number is awarded based on the bid placement.
 
@@ -63,7 +78,7 @@ An example of a normal NFT would be an artwork that is a one-of-a-kind that, onc
 
 ## Types of Auctions
 
-Coral Reef currently supports four types of auctions that are all derived from English auctions.
+Metaplex currently supports four types of auctions that are all derived from English auctions.
 
 Basic parameters include:
 
@@ -71,7 +86,7 @@ Basic parameters include:
 - Auction end time
 - Reservation price
 
-Additionally, Coral Reef includes a novel concept of the participation NFT. Each bidding participant can be rewarded a unique NFT for participating in the auction.
+Additionally, Metaplex includes a novel concept of the participation NFT. Each bidding participant can be rewarded a unique NFT for participating in the auction.
 
 The creator of an auction also has the ability to configure a minimal price that should be charged for redemption, with the option to set it as "free".
 
@@ -101,12 +116,12 @@ A tiered auction can contain a mix of the other three auction types as winning p
 
 ## Royalties
 
-Coral Reef can seamlessly create on-chain artist splits that remove the awkwardness out of collaboration.
+Metaplex can seamlessly create on-chain artist splits that remove the awkwardness out of collaboration.
 
-Tag each collaborator, set custom percentages, and you’re off to the races. Each NFT can also be minted with configurable royalty payments that are then sent automatically back to the original creators whenever an artwork is resold on a Coral Reef marketplace in the future.
+Tag each collaborator, set custom percentages, and you’re off to the races. Each NFT can also be minted with configurable royalty payments that are then sent automatically back to the original creators whenever an artwork is resold on a Metaplex marketplace in the future.
 
-## Fractionalize NFT
+## Storefronts
 
-A creator who has minted an NFT may decide to use the option to fractionalize the ownership of his work to obtain liquidity, this fractionalization will represent a percentage of the ownership and not a specific part of the NFT.
+Metaplex's off-chain component allows creators to launch a custom storefront, similar to Shopify or WordPress. This open-source project provides a graphical interface to the on-chain Metaplex program, for creators, buyers, and curators of NFTs. The design and layout of storefronts can be customized to suit the needs of the entity creating it, either as a permanent storefront or an auction hub for a specific auction or collection.
 
-By choosing the fractionation option the creator will be able to choose a number of tokens in which the property will be fractionalized, the value that has been set for the NFT at the time of creation will be divided into the number of tokens that have been set to distribute the property, from the 100% of tokens created the creator must choose a range between 0-100% of the tokens to be sent to the exchange (Serum), which can be freely exchanged in the market before, during and after the auction.
+All identification on the Storefront is based on wallet addresses. Creators and store admins sign through their wallets, and users place bids from connected wallets. Custom storefronts allow creators to create unique experiences per auction. Additionally, the Metaplex Foundation is working on multiple partnerships that will enable building immersive storefronts using VR/AR.
