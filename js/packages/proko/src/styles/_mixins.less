@@ -1,0 +1,10 @@
+.grid(@cols, @gutter: 20px) {
+  display: grid;
+  column-gap: @gutter;
+  grid-template-columns: repeat(@cols, 1fr);
+}
+
+.grid_element_column(@start, @span) {
+  grid-column: @start / span @span;
+}
+

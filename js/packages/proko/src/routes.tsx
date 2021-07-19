@@ -11,9 +11,8 @@ import {
   ArtView,
   AuctionCreateView,
   AuctionView,
-  HomeView,
   ArtworksView,
-  SiteInProgress,
+  Home,
 } from './views';
 import { UseWalletProvider } from 'use-wallet';
 import { CoingeckoProvider } from './contexts/coingecko';
@@ -81,9 +80,9 @@ export function Routes() {
                         {siteTemporaryHiddden && <>
                           <Route
                             exact
-                            path="/temp"
-                            component={() => <SiteInProgress />} />
-                          <Redirect from="*" to="/temp/" />
+                            path="/home"
+                            component={() => <Home />} />
+                          <Redirect from="*" to="/home/" />
                         </>}
                         <Route
                           exact
