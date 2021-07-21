@@ -24,9 +24,12 @@ export default (props: any) => {
         <button className="hero__cta hero__cta--secondary">Create</button>
       </div>
     </header>
+    {/* This is a mock section to allow the scroll page and be able to see the parallax effect */}
     <div style={{ visibility: 'hidden' }}>
       <img
-        style={{}}
+        style={{
+          width: '100%'
+        }}
         src="img/hero_banner_1.jpg"
         alt="" />
     </div>
