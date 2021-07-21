@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { useSpring, animated } from 'react-spring';
 
 function parseObjectToStr(
   attributes: { [index: string]: number | string },
