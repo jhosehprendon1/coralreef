@@ -1,19 +1,21 @@
-import { EventEmitter as Emitter } from "eventemitter3";
+import { EventEmitter as Emitter } from 'eventemitter3';
 
 export class CacheUpdateEvent {
-  static type = "CacheUpdate";
+  static type = 'CacheUpdate';
   id: string;
   parser: any;
   isNew: boolean;
-  constructor(id: string, isNew: boolean, parser: any) {
+  isActive: boolean;
+  constructor(id: string, isNew: boolean, parser: any, isActive: boolean) {
     this.id = id;
     this.parser = parser;
     this.isNew = isNew;
+    this.isActive = isActive;
   }
 }
 
 export class CacheDeleteEvent {
-  static type = "CacheUpdate";
+  static type = 'CacheUpdate';
   id: string;
   constructor(id: string) {
     this.id = id;
@@ -21,7 +23,7 @@ export class CacheDeleteEvent {
 }
 
 export class MarketUpdateEvent {
-  static type = "MarketUpdate";
+  static type = 'MarketUpdate';
   ids: Set<string>;
   constructor(ids: Set<string>) {
     this.ids = ids;
@@ -47,10 +49,15 @@ export class EventEmitter {
     this.emitter.emit(MarketUpdateEvent.type, new MarketUpdateEvent(ids));
   }
 
-  raiseCacheUpdated(id: string, isNew: boolean, parser: any) {
+  raiseCacheUpdated(
+    id: string,
+    isNew: boolean,
+    parser: any,
+    isActive: boolean,
+  ) {
     this.emitter.emit(
       CacheUpdateEvent.type,
-      new CacheUpdateEvent(id, isNew, parser)
+      new CacheUpdateEvent(id, isNew, parser, isActive),
     );
   }
 

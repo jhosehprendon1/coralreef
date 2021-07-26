@@ -15,7 +15,7 @@ import {
 import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { notify } from '../utils/notifications';
 import { ExplorerLink } from '../components/ExplorerLink';
-import { setProgramIds } from '../utils/ids';
+import { setProgramIds, setStoreID } from '../utils/ids';
 import {
   TokenInfo,
   TokenListProvider,
@@ -49,25 +49,21 @@ export const ENDPOINTS = [
   },
   {
     name: 'testnet' as ENV,
-    endpoint: 'https://api.testnet.solana.com',
+    endpoint: clusterApiUrl('testnet'),
     ChainId: ChainId.Testnet,
   },
   {
     name: 'devnet' as ENV,
-    endpoint: 'https://api.devnet.solana.com',
+    endpoint: clusterApiUrl('devnet'),
     ChainId: ChainId.Devnet,
   },
 ];
 
 const DEFAULT = ENDPOINTS[0].endpoint;
-const DEFAULT_SLIPPAGE = 0.25;
 
 interface ConnectionConfig {
   connection: Connection;
-  sendConnection: Connection;
   endpoint: string;
-  slippage: number;
-  setSlippage: (val: number) => void;
   env: ENV;
   setEndpoint: (val: string) => void;
   tokens: TokenInfo[];
@@ -76,32 +72,23 @@ interface ConnectionConfig {
 
 const ConnectionContext = React.createContext<ConnectionConfig>({
   endpoint: DEFAULT,
-  setEndpoint: () => { },
-  slippage: DEFAULT_SLIPPAGE,
-  setSlippage: (val: number) => { },
+  setEndpoint: () => {},
   connection: new Connection(DEFAULT, 'recent'),
-  sendConnection: new Connection(DEFAULT, 'recent'),
   env: ENDPOINTS[0].name,
   tokens: [],
   tokenMap: new Map<string, TokenInfo>(),
 });
 
-export function ConnectionProvider({ children = undefined as any }) {
+export function ConnectionProvider({
+  storeId = undefined as any,
+  children = undefined as any,
+}) {
   const [endpoint, setEndpoint] = useLocalStorageState(
     'connectionEndpoint',
     ENDPOINTS[0].endpoint,
   );
 
-  const [slippage, setSlippage] = useLocalStorageState(
-    'slippage',
-    DEFAULT_SLIPPAGE.toString(),
-  );
-
   const connection = useMemo(
-    () => new Connection(endpoint, 'recent'),
-    [endpoint],
-  );
-  const sendConnection = useMemo(
     () => new Connection(endpoint, 'recent'),
     [endpoint],
   );
@@ -118,7 +105,7 @@ export function ConnectionProvider({ children = undefined as any }) {
         .excludeByTag('nft')
         .filterByChainId(
           ENDPOINTS.find(end => end.endpoint === endpoint)?.ChainId ||
-          ChainId.MainnetBeta,
+            ChainId.MainnetBeta,
         )
         .getList();
 
@@ -132,6 +119,7 @@ export function ConnectionProvider({ children = undefined as any }) {
     });
   }, [env]);
 
+  setStoreID(storeId);
   setProgramIds(env);
 
   // The websocket library solana/web3.js uses closes its websocket connection when the subscription list
@@ -140,7 +128,7 @@ export function ConnectionProvider({ children = undefined as any }) {
   useEffect(() => {
     const id = connection.onAccountChange(
       Keypair.generate().publicKey,
-      () => { },
+      () => {},
     );
     return () => {
       connection.removeAccountChangeListener(id);
@@ -154,32 +142,12 @@ export function ConnectionProvider({ children = undefined as any }) {
     };
   }, [connection]);
 
-  useEffect(() => {
-    const id = sendConnection.onAccountChange(
-      Keypair.generate().publicKey,
-      () => { },
-    );
-    return () => {
-      sendConnection.removeAccountChangeListener(id);
-    };
-  }, [sendConnection]);
-
-  useEffect(() => {
-    const id = sendConnection.onSlotChange(() => null);
-    return () => {
-      sendConnection.removeSlotChangeListener(id);
-    };
-  }, [sendConnection]);
-
   return (
     <ConnectionContext.Provider
       value={{
         endpoint,
         setEndpoint,
-        slippage: parseFloat(slippage),
-        setSlippage: val => setSlippage(val.toString()),
         connection,
-        sendConnection,
         tokens,
         tokenMap,
         env,
@@ -194,10 +162,6 @@ export function useConnection() {
   return useContext(ConnectionContext).connection as Connection;
 }
 
-export function useSendConnection() {
-  return useContext(ConnectionContext)?.sendConnection;
-}
-
 export function useConnectionConfig() {
   const context = useContext(ConnectionContext);
   return {
@@ -207,11 +171,6 @@ export function useConnectionConfig() {
     tokens: context.tokens,
     tokenMap: context.tokenMap,
   };
-}
-
-export function useSlippageConfig() {
-  const { slippage, setSlippage } = useContext(ConnectionContext);
-  return { slippage, setSlippage };
 }
 
 export const getErrorForTransaction = async (
@@ -250,6 +209,68 @@ export enum SequenceType {
   StopOnFailure,
 }
 
+export async function sendTransactionsWithManualRetry(
+  connection: Connection,
+  wallet: any,
+  instructions: TransactionInstruction[][],
+  signers: Keypair[][],
+) {
+  let stopPoint = 0;
+  let tries = 0;
+  let lastInstructionsLength = null;
+  let toRemoveSigners: Record<number, boolean> = {};
+  instructions = instructions.filter((instr, i) => {
+    if (instr.length > 0) {
+      return true;
+    } else {
+      toRemoveSigners[i] = true;
+      return false;
+    }
+  });
+  let filteredSigners = signers.filter((_, i) => !toRemoveSigners[i]);
+
+  while (stopPoint < instructions.length && tries < 3) {
+    instructions = instructions.slice(stopPoint, instructions.length);
+    filteredSigners = filteredSigners.slice(stopPoint, filteredSigners.length);
+
+    if (instructions.length === lastInstructionsLength) tries = tries + 1;
+    else tries = 0;
+
+    try {
+      if (instructions.length === 1) {
+        await sendTransactionWithRetry(
+          connection,
+          wallet,
+          instructions[0],
+          filteredSigners[0],
+          'single',
+        );
+        stopPoint = 1;
+      } else {
+        stopPoint = await sendTransactions(
+          connection,
+          wallet,
+          instructions,
+          filteredSigners,
+          SequenceType.StopOnFailure,
+          'single',
+        );
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    console.log(
+      'Died on ',
+      stopPoint,
+      'retrying from instruction',
+      instructions[stopPoint],
+      'instructions length is',
+      instructions.length,
+    );
+    lastInstructionsLength = instructions.length;
+  }
+}
+
 export const sendTransactions = async (
   connection: Connection,
   wallet: any,
@@ -257,7 +278,7 @@ export const sendTransactions = async (
   signersSet: Keypair[][],
   sequenceType: SequenceType = SequenceType.Parallel,
   commitment: Commitment = 'singleGossip',
-  successCallback: (txid: string, ind: number) => void = (txid, ind) => { },
+  successCallback: (txid: string, ind: number) => void = (txid, ind) => {},
   failCallback: (reason: string, ind: number) => boolean = (txid, ind) => false,
   block?: BlockhashAndFeeCalculator,
 ): Promise<number> => {
@@ -532,7 +553,7 @@ export async function sendSignedTransaction({
       simulateResult = (
         await simulateTransaction(connection, signedTransaction, 'single')
       ).value;
-    } catch (e) { }
+    } catch (e) {}
     if (simulateResult && simulateResult.err) {
       if (simulateResult.logs) {
         for (let i = simulateResult.logs.length - 1; i >= 0; --i) {

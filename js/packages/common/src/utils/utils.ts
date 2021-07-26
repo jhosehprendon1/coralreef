@@ -44,6 +44,37 @@ export function useLocalStorageState(key: string, defaultState?: string) {
   return [state, setLocalStorageState];
 }
 
+export const findProgramAddress = async (
+  seeds: (Buffer | Uint8Array)[],
+  programId: PublicKey,
+) => {
+  const key =
+    'pda-' +
+    seeds.reduce((agg, item) => agg + item.toString('hex'), '') +
+    programId.toString();
+  let cached = localStorage.getItem(key);
+  if (cached) {
+    const value = JSON.parse(cached);
+
+    return [new PublicKey(value.key), parseInt(value.nonce)] as [
+      PublicKey,
+      number,
+    ];
+  }
+
+  const result = await PublicKey.findProgramAddress(seeds, programId);
+
+  localStorage.setItem(
+    key,
+    JSON.stringify({
+      key: result[0].toBase58(),
+      nonce: result[1],
+    }),
+  );
+
+  return result;
+};
+
 // shorten the checksummed version of the input address to have 4 characters at start and end
 export function shortenAddress(address: string, chars = 4): string {
   return `${address.slice(0, chars)}...${address.slice(-chars)}`;
@@ -187,7 +218,7 @@ const abbreviateNumber = (number: number, precision: number) => {
 
 export const formatAmount = (
   val: number,
-  precision: number = 6,
+  precision: number = 2,
   abbr: boolean = true,
 ) => (abbr ? abbreviateNumber(val, precision) : val.toFixed(precision));
 
@@ -197,7 +228,7 @@ export function formatTokenAmount(
   rate: number = 1.0,
   prefix = '',
   suffix = '',
-  precision = 6,
+  precision = 2,
   abbr = false,
 ): string {
   if (!account) {

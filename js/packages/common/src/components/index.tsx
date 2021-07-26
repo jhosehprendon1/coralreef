@@ -1,6 +1,3 @@
-import Popup from './Popup';
-import Stepper from './Stepper';
-
 export { ExplorerLink } from './ExplorerLink/index';
 export { ConnectButton } from './ConnectButton/index';
 export { CurrentUserBadge } from './CurrentUserBadge/index';
@@ -16,8 +13,3 @@ export { TokenDisplay } from './TokenDisplay';
 export { EtherscanLink } from './EtherscanLink';
 export { MetaplexModal } from './MetaplexModal';
 export { MetaplexOverlay } from './MetaplexOverlay';
-export { UserWalletBtn } from './UserWalletBtn';
-export {
-    Popup,
-    Stepper
-};

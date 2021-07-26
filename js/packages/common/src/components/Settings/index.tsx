@@ -4,7 +4,6 @@ import { useWallet } from '../../contexts/wallet';
 import { ENDPOINTS, useConnectionConfig } from '../../contexts/connection';
 import { shortenAddress } from '../../utils';
 import { CopyOutlined } from '@ant-design/icons';
-import './styles.css';
 
 export const Settings = ({
   additionalSettings,
@@ -14,10 +13,11 @@ export const Settings = ({
   const { connected, disconnect, select, wallet } = useWallet();
   const { endpoint, setEndpoint } = useConnectionConfig();
 
-  return (<div className="settings">
+  return (
+    <>
+      <div style={{ display: 'grid' }}>
         Network:{' '}
-         <Select
-          className="settings__input"
+        <Select
           onSelect={setEndpoint}
           value={endpoint}
           style={{ marginBottom: 20 }}
@@ -33,7 +33,6 @@ export const Settings = ({
             <span>Wallet:</span>
             {wallet?.publicKey && (
               <Button
-                className="settings__input"
                 style={{ marginBottom: 5 }}
                 onClick={() =>
                   navigator.clipboard.writeText(
@@ -46,14 +45,10 @@ export const Settings = ({
               </Button>
             )}
 
-            <Button
-              className="settings__input"
-              onClick={select}
-              style={{ marginBottom: 5 }}>
+            <Button onClick={select} style={{ marginBottom: 5 }}>
               Change
             </Button>
             <Button
-              className="settings__btn"
               type="primary"
               onClick={disconnect}
               style={{ marginBottom: 5 }}
@@ -64,5 +59,6 @@ export const Settings = ({
         )}
         {additionalSettings}
       </div>
+    </>
   );
 };
