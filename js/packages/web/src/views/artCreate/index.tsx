@@ -54,9 +54,8 @@ export const ArtCreateView = () => {
   const [step, setStep] = useState<number>(0);
   const [stepsVisible, setStepsVisible] = useState<boolean>(true);
   const [progress, setProgress] = useState<number>(0);
-  const [nft, setNft] = useState<{ metadataAccount: PublicKey } | undefined>(
-    undefined,
-  );
+  const [nft, setNft] =
+    useState<{ metadataAccount: PublicKey } | undefined>(undefined);
   const [files, setFiles] = useState<File[]>([]);
   const [attributes, setAttributes] = useState<IMetadataExtension>({
     name: '',
@@ -222,7 +221,7 @@ const CategoryStep = (props: {
       <Row className="call-to-action">
         <h2>Create a new item</h2>
         <p>
-          First time creating on Metaplex?{' '}
+          First time creating on CoralReef?{' '}
           <a href="#">Read our creators’ guide.</a>
         </p>
       </Row>
@@ -697,9 +696,8 @@ const RoyaltiesSplitter = (props: {
           };
 
           return (
-            <Col span={24}>
+            <Col span={24} key={idx}>
               <Row
-                key={idx}
                 align="middle"
                 gutter={[0, 16]}
                 style={{ margin: '5px auto' }}
@@ -1069,13 +1067,13 @@ const Congrats = (props: {
 
   const newTweetURL = () => {
     const params = {
-      text: "I've created a new NFT artwork on Metaplex, check it out!",
+      text: "I've created a new NFT artwork on CoralReef, check it out!",
       url: `${
         window.location.origin
       }/#/art/${props.nft?.metadataAccount.toString()}`,
-      hashtags: 'NFT,Crypto,Metaplex',
-      // via: "Metaplex",
-      related: 'Metaplex,Solana',
+      hashtags: 'NFT,Crypto,CoralReef',
+      // via: "CoralReef",
+      related: 'CoralReef,Solana',
     };
     const queryParams = new URLSearchParams(params).toString();
     return `https://twitter.com/intent/tweet?${queryParams}`;

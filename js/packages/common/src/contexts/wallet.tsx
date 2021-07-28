@@ -172,10 +172,10 @@ export function WalletProvider({ children = null as any }) {
             marginBottom: 10,
           }}
         >
-          M
+          CoralReef
         </div>
 
-        <h2>{provider ? 'Change provider' : 'Welcome to Metaplex'}</h2>
+        <h2>{provider ? 'Change provider' : 'Welcome to CoralReef'}</h2>
         <p>
           {provider
             ? 'Feel free to switch wallet provider'

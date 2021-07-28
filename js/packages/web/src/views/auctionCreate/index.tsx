@@ -552,7 +552,7 @@ const CategoryStep = (props: {
       <Row className="call-to-action">
         <h2>List an item</h2>
         <p>
-          First time listing on Metaplex? <a>Read our sellers' guide.</a>
+          First time listing on CoralReef? <a>Read our sellers' guide.</a>
         </p>
       </Row>
       <Row justify={width < 768 ? 'center' : 'start'}>
@@ -1164,8 +1164,8 @@ const EndingPhaseAuction = (props: {
             </span>
             <Input
               addonAfter={(
-                <Select 
-                  defaultValue={props.attributes.auctionDurationType} 
+                <Select
+                  defaultValue={props.attributes.auctionDurationType}
                   onChange={
                     value =>
                       props.setAttributes({
@@ -1200,10 +1200,10 @@ const EndingPhaseAuction = (props: {
             </span>
             <Input
               addonAfter={(
-                <Select 
+                <Select
                   defaultValue={props.attributes.gapTimeType}
                   onChange={
-                    value => 
+                    value =>
                       props.setAttributes({
                         ...props.attributes,
                         gapTimeType: value,
@@ -1378,7 +1378,7 @@ const TierTableStep = (props: {
         </p>
       </Row>
       {props.attributes.tiers.map((wcg, configIndex) => (
-        <Row className="content-action">
+        <Row className="content-action" key={configIndex}>
           <Col xl={24}>
             <h3>Tier #{configIndex + 1} Basket</h3>
           </Col>
@@ -1398,7 +1398,7 @@ const TierTableStep = (props: {
           />
 
           {wcg.items.map((i, itemIndex) => (
-            <Col className="section" xl={8}>
+            <Col className="section" xl={8} key={itemIndex}>
               <Card>
                 <ArtSelector
                   filter={artistFilter}
@@ -1840,7 +1840,7 @@ const WaitingStep = (props: {
     >
       <Progress type="circle" percent={progress} />
       <div className="waiting-title">
-        Your creation is being listed with Metaplex...
+        Your creation is being listed with CoralReef...
       </div>
       <div className="waiting-subtitle">This can take up to 30 seconds.</div>
     </div>
@@ -1858,13 +1858,13 @@ const Congrats = (props: {
 
   const newTweetURL = () => {
     const params = {
-      text: "I've created a new NFT auction on Metaplex, check it out!",
+      text: "I've created a new NFT auction on CoralReef, check it out!",
       url: `${
         window.location.origin
       }/#/auction/${props.auction?.auction.toString()}`,
-      hashtags: 'NFT,Crypto,Metaplex',
-      // via: "Metaplex",
-      related: 'Metaplex,Solana',
+      hashtags: 'NFT,Crypto,CoralReef',
+      // via: "CoralReef",
+      related: 'CoralReef,Solana',
     };
     const queryParams = new URLSearchParams(params).toString();
     return `https://twitter.com/intent/tweet?${queryParams}`;
