@@ -1,0 +1,19 @@
+{
+  "name": "nodejs",
+  "version": "0.0.1",
+  "description": "CoralReef API Lambda Functions.",
+  "private": true,
+  "scripts": {
+    "test": "jest",
+    "start": "sam local start-api --env-vars env.json --debug"
+  },
+  "keywords": [],
+  "author": "Oiga Technologies S.A.S (https://oiga.com/)",
+  "devDependencies": {
+    "jest": "^26.6.3"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.799.0",
+    "uuid": "^8.3.2"
+  }
+}
