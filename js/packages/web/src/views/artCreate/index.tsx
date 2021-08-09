@@ -13,7 +13,10 @@ import {
   InputNumber,
   Form,
   Typography,
+  Checkbox,
+  Tooltip
 } from 'antd';
+import { ExclamationCircleOutlined } from '@ant-design/icons';
 import { ArtCard } from './../../components/ArtCard';
 import { UserSearch, UserValue } from './../../components/UserSearch';
 import { Confetti } from './../../components/Confetti';
@@ -641,6 +644,24 @@ const InfoStep = (props: {
               className="royalties-input"
             />
           </label>
+          <div style={{margin: "-30px 0 20px 0"}}>
+          <Checkbox>
+            My creation has explicit content 
+            <Tooltip title={() => (
+              <>
+                <p style={{color: "white"}}>Explicit content applies when one or more of the following criteria which could be considered offensive or unsuitable for children:</p>
+                <ul>
+                  <li>Strong language</li>
+                  <li>References to violence, physical, or mental abuse</li>
+                  <li>References to sexual behaviour</li>
+                  <li>Discriminatory language</li>
+                </ul>
+              </>
+            )}>
+              <ExclamationCircleOutlined style={{marginLeft: "5px"}} />
+            </Tooltip>
+          </Checkbox>
+          </div>
         </Col>
       </Row>
 
