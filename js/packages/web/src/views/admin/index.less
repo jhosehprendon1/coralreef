@@ -1,3 +1,84 @@
 .artist-whitelist-table {
   width: 100%;
 }
+
+.input-search-box {
+  min-width: 320px;
+}
+
+.input-search-icon {
+  position: absolute;
+  margin: 14px 10px 0 0;
+}
+
+.search-block {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.tab-control {
+  margin: 30px 0 30px 0; 
+  display: block
+}
+
+.button-status {
+    padding: 0 15px;
+    color: rgba(255, 255, 255);
+    font-size: 14px;
+    line-height: 30px;
+    background: transparent;
+    border: 1.2px solid white;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 80px;
+}
+
+.button-status-blocked {
+  padding: 0 10px;
+  color: rgba(255, 255, 255);
+  font-size: 14px;
+  line-height: 30px;
+  background: #F13636;
+  border: 1.2px solid transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  width: 80px;
+}
+
+.button-status-blocked:before {
+  content:"Blocked";
+}
+
+.button-status-blocked:hover:before {
+  content:"Unblock";
+}
+
+.button-status:hover {
+    background: white;
+    color: #434343;
+    width: 80px;
+}
+
+.button-status-blocked:hover {
+  background: transparent;
+  width: 80px;
+  color: #F13636;
+  border: 1.2px solid #F13636;
+}
+
+.status-active {
+  color: #67E191
+}
+
+.single-table-info {
+  color: white
+}
+
+.custom-table-data {
+  position: relative; 
+  top: 7px;
+}
+
+.nft-update-spinner {
+  margin: 10px 10px 0 0;
+}

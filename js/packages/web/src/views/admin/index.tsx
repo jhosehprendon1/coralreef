@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Layout,
   Row,
@@ -9,7 +10,10 @@ import {
   Modal,
   Button,
   Input,
+  Radio,
 } from 'antd';
+import api from "../../apis/api.js"
+import { SearchOutlined } from '@ant-design/icons';
 import { useMeta } from '../../contexts';
 import { Store, WhitelistedCreator } from '../../models/metaplex';
 import {
@@ -29,21 +33,55 @@ import {
   convertMasterEditions,
   filterMetadata,
 } from '../../actions/convertMasterEditions';
+import { any } from 'prop-types';
+import moment from 'moment';
 
 const { Content } = Layout;
+const { Search } = Input;
 export const AdminView = () => {
   const { store, whitelistedCreatorsByCreator } = useMeta();
   const connection = useConnection();
   const { wallet, connected } = useWallet();
+  const [mode, setMode] = useState('NFT')
+  const [searchTerm, setSearchTerm] = useState('')
+  const [nftList, setNftList] = useState([])
+
+  useEffect(() => {
+    api.get('/get-all-nfts', {
+      headers: {
+        'X-Api-Key': '4P8udxRbQ438cGHE2i0dTLsmQPtsNMN1G4q2UW47'
+      }
+    }).then((res) => {
+      setNftList(res.data.map((el: object) => el.hasOwnProperty("name") ? el : {...el, name: ""}))
+
+      // setNftList(res.data)
+    }).catch(e => console.log('ERR', e))
+  }, [])
+
+  
+
+  const handleModeChange = (e: any) => {
+    const mode = e.target.value;
+    setMode(mode);
+  };
 
   return store && connection && wallet && connected ? (
+    <>
+    <Radio.Group onChange={handleModeChange} value={mode} className="tab-control">
+      <Radio.Button value="NFT">NFTs</Radio.Button>
+      <Radio.Button value="creators">Creators</Radio.Button>
+    </Radio.Group>
     <InnerAdminView
+      data={nftList}
+      setNftList={setNftList}
+      mode={mode}
       store={store}
       whitelistedCreatorsByCreator={whitelistedCreatorsByCreator}
       connection={connection}
       wallet={wallet}
       connected={connected}
     />
+    </>
   ) : (
     <Spin />
   );
@@ -52,14 +90,17 @@ export const AdminView = () => {
 function ArtistModal({
   setUpdatedCreators,
   uniqueCreatorsWithUpdates,
+  mode
 }: {
   setUpdatedCreators: React.Dispatch<
     React.SetStateAction<Record<string, WhitelistedCreator>>
   >;
   uniqueCreatorsWithUpdates: Record<string, WhitelistedCreator>;
+  mode: string
 }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalAddress, setModalAddress] = useState<string>('');
+
   return (
     <>
       <Modal
@@ -105,7 +146,7 @@ function ArtistModal({
           onChange={e => setModalAddress(e.target.value)}
         />
       </Modal>
-      <Button onClick={() => setModalOpen(true)}>Add Creator</Button>
+      {mode === 'NFT' ? null : <Button onClick={() => setModalOpen(true)}>Add Creator</Button>}
     </>
   );
 }
@@ -116,6 +157,9 @@ function InnerAdminView({
   connection,
   wallet,
   connected,
+  mode,
+  data,
+  setNftList
 }: {
   store: ParsedAccount<Store>;
   whitelistedCreatorsByCreator: Record<
@@ -125,6 +169,9 @@ function InnerAdminView({
   connection: Connection;
   wallet: WalletAdapter;
   connected: boolean;
+  mode: string;
+  data: Array<object>;
+  setNftList:Function
 }) {
   const [newStore, setNewStore] = useState(
     store && store.info && new Store(store.info),
@@ -138,6 +185,7 @@ function InnerAdminView({
   }>();
   const [loading, setLoading] = useState<boolean>();
   const { metadata, masterEditions } = useMeta();
+  const [searchTerm, setSearchTerm] = useState('')
 
   const { accountByMint } = useUserAccounts();
   useMemo(() => {
@@ -166,61 +214,187 @@ function InnerAdminView({
     {},
   );
 
-  const uniqueCreatorsWithUpdates = { ...uniqueCreators, ...updatedCreators };
+  const filteredNftList = data.filter((el: any) => el.title ? el.title.toLocaleLowerCase().indexOf(searchTerm.toLowerCase()) !== -1 : null)
 
-  const columns = [
-    {
-      title: 'Name',
-      dataIndex: 'name',
-      key: 'name',
-    },
-    {
-      title: 'Address',
-      dataIndex: 'address',
-      render: (val: PublicKey) => <span>{val.toBase58()}</span>,
-      key: 'address',
-    },
-    {
-      title: 'Activated',
-      dataIndex: 'activated',
-      key: 'activated',
-      render: (
-        value: boolean,
-        record: {
-          address: PublicKey;
-          activated: boolean;
-          name: string;
-          key: string;
-        },
-      ) => (
-        <Switch
-          checkedChildren="Active"
-          unCheckedChildren="Inactive"
-          checked={value}
-          onChange={val =>
-            setUpdatedCreators(u => ({
-              ...u,
-              [record.key]: new WhitelistedCreator({
-                activated: val,
-                address: record.address,
-              }),
-            }))
-          }
-        />
-      ),
-    },
-  ];
+  const onChangeAction = (record: any) => {
+    setLoading(true)
+    const newStatus = record.status == 1 ? 0 : 1
+    const newTitle = record.name ? record.name : record.title
+    const newData = {...record, status: newStatus, title: newTitle, tags: [{name: record.tags[0].name, value: ""}]}
+    delete newData['createdAt'];
+    delete newData['name'];
+    api.post('/put-nft', newData, {
+      headers: {
+        'X-Api-Key': '4P8udxRbQ438cGHE2i0dTLsmQPtsNMN1G4q2UW47'
+      }
+    }).then((res: any) => {
+      const updatedNftList = data.map((el:any) => el.id === res.data.id ? res.data : el)
+      setNftList(updatedNftList)
+      setLoading(false)
+    }).catch((e) => {
+      setLoading(false)
+    })
+  }
+
+  let uniqueCreatorsWithUpdates: any
+  let columns
+
+  if (mode=== 'NFT') {
+    columns = [
+      {
+        title: 'Title',
+        dataIndex: 'title',
+        key: 'title',
+      },
+      {
+        title: 'Address',
+        dataIndex: 'address',
+        // render: (val: PublicKey) => <span>{val.toBase58()}</span>,
+        key: 'address',
+        render: (text: any, record: any) => (
+          <Link to={`/art/${text}`} style={{color: 'white'}}>
+            {text ? text.substring(0, 10) + '...': ''}
+          </Link>
+         ),
+      },
+      {
+        title: 'Date created',
+        dataIndex: 'createdAt',
+        key: 'createdAt',
+        sorter: (a: any, b: any) => moment(a.createdAt).unix() - moment(b.createdAt).unix(),
+        showSorterTooltip:false,
+        render: (text: any, record: any) => (
+          <p className="single-table-info custom-table-data">
+            {text ? moment(text).format('MM/DD/YYYY') : ""}
+          </p>
+         ),
+      },
+      {
+        title: 'Creator',
+        dataIndex: 'creator',
+        key: 'creator',
+        render: (text: any, record: any) => (
+          <p className="single-table-info custom-table-data">
+            {text ? text.substring(0, 10) + '...' : ''}
+          </p>
+         ),
+      },
+      {
+        title: 'State',
+        dataIndex: 'status',
+        key: 'status',
+        render: (text: any, record: any) => (
+          <p className={record.status === 1 ? "status-active custom-table-data" : "status-blocked custom-table-data"}>
+            {record.status == 1 ? 'Active' : 'Inactive'}
+          </p>
+         ),
+      },
+      {
+        title: 'Explicit',
+        dataIndex: 'isNsfw',
+        key: 'isNsfw',
+        showSorterTooltip:false,
+        sorter: (a: any, b: any) => a.isNsfw - b.isNsfw,
+        render: (text: any, record: any) => (
+          <p className="single-table-info custom-table-data">
+            {record.isNsfw == 1 ? 'Yes' : 'No'}
+          </p>
+         ),
+      },
+      {
+        title: 'Action',
+        key: 'action',
+        dataIndex: 'action',
+        render: (text: any, record: any) => (
+          <button className={record.status == 1 ? "button-status" : "button-status-blocked"} onClick={() => onChangeAction(record)}>
+            {record.status == 1 ? "Block" : ""}
+          </button>
+        ),
+      }
+    ];
+  } else {
+    uniqueCreatorsWithUpdates = { ...uniqueCreators, ...updatedCreators };
+
+    columns = [
+      {
+        title: 'Name',
+        dataIndex: 'name',
+        key: 'name',
+      },
+      {
+        title: 'Address',
+        dataIndex: 'address',
+        render: (val: PublicKey) => <span>{val.toBase58()}</span>,
+        key: 'address',
+      },
+      {
+        title: 'Activated',
+        dataIndex: 'activated',
+        key: 'activated',
+        render: (
+          value: boolean,
+          record: {
+            address: PublicKey;
+            activated: boolean;
+            name: string;
+            key: string;
+          },
+        ) => (
+          <Switch
+            checkedChildren="Active"
+            unCheckedChildren="Inactive"
+            checked={value}
+            onChange={val =>
+              setUpdatedCreators(u => ({
+                ...u,
+                [record.key]: new WhitelistedCreator({
+                  activated: val,
+                  address: record.address,
+                }),
+              }))
+            }
+          />
+        ),
+      },
+    ];
+  }
+
+  let dataSource:any
+
+  if(mode === 'NFT') {
+    dataSource = filteredNftList
+  } else {
+    dataSource = Object.keys(uniqueCreatorsWithUpdates).map(key => ({
+      key,
+      address: uniqueCreatorsWithUpdates[key].address,
+      activated: uniqueCreatorsWithUpdates[key].activated,
+      name:
+        uniqueCreatorsWithUpdates[key].name ||
+        shortenAddress(
+          uniqueCreatorsWithUpdates[key].address.toBase58(),
+        ),
+      image: uniqueCreatorsWithUpdates[key].image,
+    })).filter((el: any) => el.name.toLocaleLowerCase().indexOf(searchTerm.toLowerCase()) !== -1)
+  }
 
   return (
+    <>
+    <div className="search-block">
+      {loading ? <Spin size="default" className="nft-update-spinner"/> : null}
+      <SearchOutlined className="input-search-icon"/><input className="input input-search-box" placeholder='Search by Title...' onChange={(e) => setSearchTerm(e.target.value)}/>
+    </div>
     <Content>
       <Col style={{ marginTop: 10 }}>
         <Row>
           <Col span={21}>
             <ArtistModal
+              mode={mode}
               setUpdatedCreators={setUpdatedCreators}
               uniqueCreatorsWithUpdates={uniqueCreatorsWithUpdates}
             />
-            <Button
+            {
+            mode === 'NFT' ? null 
+            : <Button
               onClick={async () => {
                 notify({
                   message: 'Saving...',
@@ -241,8 +415,10 @@ function InnerAdminView({
             >
               Submit
             </Button>
+            }
           </Col>
-          <Col span={3}>
+          { mode === 'NFT' ? null 
+            : <Col span={3}>
             <Switch
               checkedChildren="Public"
               unCheckedChildren="Whitelist Only"
@@ -256,22 +432,13 @@ function InnerAdminView({
               }}
             />
           </Col>
+        }
         </Row>
         <Row>
           <Table
             className="artist-whitelist-table"
             columns={columns}
-            dataSource={Object.keys(uniqueCreatorsWithUpdates).map(key => ({
-              key,
-              address: uniqueCreatorsWithUpdates[key].address,
-              activated: uniqueCreatorsWithUpdates[key].activated,
-              name:
-                uniqueCreatorsWithUpdates[key].name ||
-                shortenAddress(
-                  uniqueCreatorsWithUpdates[key].address.toBase58(),
-                ),
-              image: uniqueCreatorsWithUpdates[key].image,
-            }))}
+            dataSource={dataSource}
           ></Table>
         </Row>
       </Col>
@@ -304,5 +471,6 @@ function InnerAdminView({
         </Row>
       </Col> */}
     </Content>
+    </>
   );
 }
